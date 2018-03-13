@@ -1,0 +1,40 @@
+Bootstrap:shub
+From:singularityhub/ubuntu
+
+%labels
+    Maintainer Phelelani.Mpangase@wits.ac.za
+
+%post
+    ## Updates and essentials
+    apt-get update
+    apt-get install -y build-essential
+    apt-get install -y wget git curl
+
+    ## Install Jellyfish
+    cd /opt \
+        && wget http://www.cbcb.umd.edu/software/jellyfish/jellyfish-1.1.11.tar.gz \
+        && tar -vxf jellyfish-1.1.11.tar.gz \
+        && cd jellyfish-1.1.11 \
+        && ./configure \
+        && make \
+        && make install \
+        && rm /opt/jellyfish-1.1.11.tar.gz
+
+    ## Install Kraken
+    cd /opt \
+        && git clone https://github.com/DerrickWood/kraken.git \
+        && cd kraken \
+        && ./install_kraken.sh bin
+
+    ## Install Krona
+    cd /opt \
+        && wget https://github.com/marbl/Krona/releases/download/v2.7/KronaTools-2.7.tar \
+        && tar -vxf KronaTools-2.7.tar \
+        && cd KronaTools-2.7 \
+        && ./install.pl \
+        && ./updateTaxonomy.sh \
+        && rm /opt/KronaTools-2.7.tar
+
+%environment
+    export PATH=/opt/kraken/bin:$PATH
+
