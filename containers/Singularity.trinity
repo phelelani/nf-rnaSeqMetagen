@@ -1,0 +1,58 @@
+Bootstrap: shub
+From: singularityhub/ubuntu
+
+%labels
+    Maintainer Phelelani.Mpangase@wits.ac.za
+    
+%post	       
+## Updates and essentials
+apt-get update
+apt-get install -y build-essential
+apt-get install -y wget unzip curl python rsync
+
+## Java
+apt-get install -y software-properties-common debconf-utils 
+add-apt-repository -y ppa:webupd8team/java
+apt-get update
+echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
+apt-get install -y zlib1g-dev oracle-java8-installer 
+
+## Install Jellyfish
+cd /opt \
+    && wget http://www.cbcb.umd.edu/software/jellyfish/jellyfish-1.1.11.tar.gz \
+    && tar -vxf jellyfish-1.1.11.tar.gz \
+    && cd jellyfish-1.1.11 \
+    && ./configure \
+    && make \
+    && make install \
+    && rm /opt/jellyfish-1.1.11.tar.gz
+
+## Install Bowtie2
+cd /opt \
+    && wget -O bowtie2.zip --no-check-certificat https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.3.4.1/bowtie2-2.3.4.1-source.zip \
+    && unzip bowtie2.zip \
+    && rm /opt/bowtie2.zip
+
+## Install Salmon
+cd /opt \
+    && wget -c https://github.com/COMBINE-lab/salmon/releases/download/v0.9.1/Salmon-0.9.1_linux_x86_64.tar.gz \
+    && tar -vxf Salmon-0.9.1_linux_x86_64.tar.gz \
+    && rm /opt/Salmon-0.9.1_linux_x86_64.tar.gz
+
+## Install Trinity
+cd /opt \
+    && wget -c https://github.com/trinityrnaseq/trinityrnaseq/archive/Trinity-v2.6.5.tar.gz \
+    && tar -vxf Trinity-v2.6.5.tar.gz \
+    && cd trinityrnaseq-Trinity-v2.6.5 \
+    && make \
+    && make plugins \
+    && make install \
+    && rm /opt/Trinity-v2.6.5.tar.gz
+
+%environment
+## Add paths to  environment
+export PATH=/opt/bowtie2-2.3.4.1:$PATH
+export PATH=/opt/Salmon-latest_linux_x86_64/bin:$PATH
+export PATH=/opt/trinityrnaseq-Trinity-v2.6.5:$PATH
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle
+export PYTHONPATH=/usr/local/lib/python2.7/dist-packages
