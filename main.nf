@@ -20,25 +20,26 @@ out_path.mkdir()
 read_pair = Channel.fromFilePairs("${data_path}/*_R{1,2}.fq", type: 'file')
 
 // 1. 
-process aligner {
+process runSTAR_process {
     cpus 6
     memory '40 GB'
     time '100h'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
-
+    
     input:
     set sample, file(reads) from read_pair
-
+    
     output:
-    set sample, file("${sample}_*.bam") into bam_file
-    set sample, file("${sample}_Unmapped*") into unmapped_reads, unmapped_Trinity
-
+    set sample, file("${sample}_*") into star_results
+    // set sample, file("${sample}_*.bam") into bam_file
+    set sample, file("${sample}_Unmapped*") into unmapped_kraken, unmapped_trinity
+    
     """	
     STAR --runMode alignReads \
        --genomeDir ${index} \
        --readFilesIn ${reads.get(0)} ${reads.get(1)} \
-       --runThreadN 10 \
+       --runThreadN 5 \
        --outSAMtype BAM SortedByCoordinate \
        --outReadsUnmapped Fastx \
        --outFileNamePrefix ${sample}_
@@ -49,68 +50,79 @@ process aligner {
     """ 
 }
 
-bam_file.subscribe { println it }
-
-// // 2. 
-// process classifyUnmappedreads {
-//     cpus 3
-//     memory '150 GB'
-//     time '100h'
-//     tag { sample }
-//     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
-
-//     input:
-//     set sample, file(reads) from unmapped_reads
-
-//     output:
-//     set sample, file("kraken_output.txt") into classified_reads 
-
-//     """	
-//     kraken --db ${db} \
-//         --fastq-input --paired ${reads.get(0)} ${reads.get(1)} \
-//         --threads 2 --output kraken_output.txt
-//     """ 
-// }
-
-// // 3. 
-// process runTrinity_process {
-//      cpus 5
-//      memory '150 GB'
-//      time '50h'
-//      tag { sample }
-//      publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+// 2. 
+process runKrakenClassifyReads_process {
+    cpus 6
+    memory '150 GB'
+    time '100h'
+    tag { sample }
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
     
-//      input:
-//      set sample, file(reads) from unmapped_Trinity
+    input:
+    set sample, file(reads) from unmapped_kraken
     
-//      output:
-//      set sample, "trinity_${sample}/Trinity.fasta" into assemblies
+    output:
+    set sample, file("kraken_output.txt") into kraken_classified_reads 
+    
+    """	
+    kraken --db ${db} \
+        --fastq-input \
+        --paired ${reads.get(0)} ${reads.get(1)} \
+        --threads 5 \
+        --output kraken_output.txt
+    """ 
+}
 
-//      """
-//      Trinity --seqType fq --max_memory 150G --left ${reads.get(0)} --right ${reads.get(1)} --SS_lib_type RF --CPU 4 --output  trinity_${sample}
-//      """
-//  }
+// 3. 
+process runTrinityAssemble_process {
+     cpus 6
+     memory '150 GB'
+     time '50h'
+     tag { sample }
+     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+    
+     input:
+     set sample, file(reads) from unmapped_trinity
+    
+     output:
+     set sample, "trinity_${sample}/Trinity.fasta" into trinity_assembled_reads
 
-// // 4. 
-// process classifyFasta{
-//     cpus 3
-//     memory '150 GB'
-//     time '100h'
-//     tag { sample }
-//     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+     """
+     Trinity --seqType fq \
+        --max_memory 150G \
+        --left ${reads.get(0)} --right ${reads.get(1)} \
+        --SS_lib_type RF \
+        --CPU 5 \
+        --output  trinity_${sample}
+     """
+ }
 
-//     input:
-//     set sample, file(fasta) from assemblies
+// 4.
+process runKrakenClassifyFasta_process{
+    cpus 6
+    memory '150 GB'
+    time '100h'
+    tag { sample }
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
 
-//     output:
-//     set sample, file("kraken_outputFasta.txt") into classified_fasta 
+    input:
+    set sample, file(fasta) from trinity_assembled_reads
 
-//     """	
-//     kraken --db ${db} \
-//         --fasta-input ${fasta} \
-//         --threads 2 --output kraken_outputFasta.txt
-//     """ 
-// }
+    output:
+    set sample, file("kraken_outputFasta.txt") into kraken_classified_fasta 
+
+    """	
+    kraken --db ${db} \
+        --fasta-input ${fasta} \
+        --threads 5 \
+        --output kraken_outputFasta.txt
+    """ 
+}
+
+
+star_results.subscribe { println it }
+kraken_classified_reads.subscribe { println it }
+kraken_classified_fasta.subscribe { println it }
 
 // all_classified = classified_reads.merge( classified_fasta ) { listA, listB -> [ listA[0], [listA[1], listB[1]] ] }
 // all_classified.println { it }
