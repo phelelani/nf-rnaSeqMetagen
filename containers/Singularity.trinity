@@ -9,6 +9,7 @@ From: singularityhub/ubuntu
 apt-get update
 apt-get install -y build-essential
 apt-get install -y wget unzip curl python rsync
+apt-get install libncurses5-dev libncursesw5-dev
 
 ## Java
 apt-get install -y software-properties-common debconf-utils 
@@ -35,7 +36,7 @@ cd /opt \
     && ./configure \
     && make \
     && make install \
-    && rm /opt/samtools-1.7.tar.bz
+    && rm /opt/samtools-1.7.tar.bz2
 
 ## Install Bowtie2
 cd /opt \
