@@ -26,6 +26,7 @@ cd /opt \
     && ./configure \
     && make \
     && make install \
+    && ldconfig \
     && rm /opt/jellyfish-2.2.9.tar.gz
 
 ## Install samtools
