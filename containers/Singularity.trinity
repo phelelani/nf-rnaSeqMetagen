@@ -46,6 +46,7 @@ cd /opt \
 cd /opt \
     && wget -O bowtie2.zip --no-check-certificate https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.3.4.1/bowtie2-2.3.4.1-source.zip \
     && unzip bowtie2.zip \
+    && make \
     && rm /opt/bowtie2.zip
 
 ## Install Salmon
