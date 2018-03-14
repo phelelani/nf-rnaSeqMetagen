@@ -23,7 +23,7 @@ cd /opt \
     && wget https://github.com/gmarcais/Jellyfish/releases/download/v2.2.9/jellyfish-2.2.9.tar.gz \
     && tar -vxf jellyfish-2.2.9.tar.gz \
     && cd jellyfish-2.2.9 \
-    && ./configure \
+    && ./configure --prefix=/opt/jellyfish-2.2.9 \
     && make \
     && make install \
     && ldconfig \
@@ -64,7 +64,7 @@ cd /opt \
 %environment
 ## Add paths to  environment
 export PATH=/opt/jellyfish-2.2.9/bin:$PATH
-export LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH=/opt/jellyfish-2.2.9/lib
 export PATH=/opt/samtools-1.7/bin:$PATH
 export PATH=/opt/bowtie2-2.3.4.1:$PATH
 export PATH=/opt/Salmon-latest_linux_x86_64/bin:$PATH
