@@ -24,6 +24,7 @@ process runSTAR_process {
     cpus 6
     memory '40 GB'
     time '100h'
+    scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
     
@@ -54,6 +55,7 @@ process runKrakenClassifyReads_process {
     cpus 6
     memory '150 GB'
     time '100h'
+    scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
     
@@ -61,14 +63,14 @@ process runKrakenClassifyReads_process {
     set sample, file(reads) from unmapped_kraken
     
     output:
-    set sample, file("kraken_output.txt") into kraken_classified_reads 
+    set sample, file("kraken_report_reads.krak") into kraken_classified_reads 
     
     """	
     kraken --db ${db} \
         --fastq-input \
         --paired ${reads.get(0)} ${reads.get(1)} \
         --threads 5 \
-        --output kraken_output.txt
+        --output kraken_report_reads.krak
     """ 
 }
 
@@ -77,6 +79,7 @@ process runTrinityAssemble_process {
      cpus 6
      memory '150 GB'
      time '50h'
+    scratch '$HOME/tmp'
      tag { sample }
      publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
     
@@ -101,6 +104,7 @@ process runKrakenClassifyFasta_process{
     cpus 6
     memory '150 GB'
     time '100h'
+    scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
 
@@ -108,13 +112,13 @@ process runKrakenClassifyFasta_process{
     set sample, file(fasta) from trinity_assembled_reads
 
     output:
-    set sample, file("kraken_outputFasta.txt") into kraken_classified_fasta 
+    set sample, file("kraken_report_fasta.krak") into kraken_classified_fasta 
 
     """	
     kraken --db ${db} \
         --fasta-input ${fasta} \
         --threads 5 \
-        --output kraken_outputFasta.txt
+        --output kraken_report_fasta.krak
     """ 
 }
 
@@ -123,8 +127,9 @@ all_classified = kraken_classified_reads.merge( kraken_classified_fasta ) { list
 // 5. 
 process runKronareport{
     cpus 8
-    memory '200 GB'
-    time '50h'
+    memory '5 GB'
+    time '10h'
+    scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
     
@@ -135,17 +140,38 @@ process runKronareport{
     set sample, file("*") into html
 
     """
-    function doKrona {
-        cut -f 2,3 \$1 > \$(sed 's/.kraken/.krona/' <<< "\$1")
-        ktImportTaxonomy \$(sed 's/.kraken/.krona/' <<< "\$1") \
+    function createChart {
+    cut -f 2,3 \$1 > \$(sed 's/.krak/.kron/' <<< "\$1")
+    ktImportTaxonomy \$(sed 's/.krak/.kron/' <<< "\$1") \
         -tax ${taxonomy} \
-        -o \$(sed 's/.kraken/.html/' <<< "\$1")
+        -o \$(sed 's/.krak/.html/' <<< "\$1")
     }
-    doKrona ${kraken.get(0)}
-    doKrona ${kraken.get(1)}
+    createChart ${kraken.get(0)}
+    createChart ${kraken.get(1)}
     """
 }
 
+// 6a. Collect files for STAR QC
+star_results.collectFile () { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
+.set { qc_star }
 
-html.subscribe {println it}
+// 6. Get QC for STAR, HTSeqCounts and featureCounts
+process runMultiQC_process {
+    cpus 1
+    memory '5 GB'
+    time '10h'
+    scratch '$HOME/tmp'
+    tag { sample }
+    publishDir "$out_path/report_QC", mode: 'copy', overwrite: false
 
+    input:
+    file(star) from qc_star
+
+    output:
+    file('*') into multiQC
+
+    """
+    /bin/hostname
+    multiqc `< ${star}` `< ${htseqcounts}` `< ${featurecounts}` --force
+    """
+}
