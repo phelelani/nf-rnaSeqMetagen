@@ -32,7 +32,6 @@ process runSTAR_process {
     
     output:
     set sample, file("${sample}_*") into star_results
-    // set sample, file("${sample}_*.bam") into bam_file
     set sample, file("${sample}_Unmapped*") into unmapped_kraken, unmapped_trinity
     
     """	
@@ -50,28 +49,28 @@ process runSTAR_process {
     """ 
 }
 
-// // 2. 
-// process runKrakenClassifyReads_process {
-//     cpus 6
-//     memory '150 GB'
-//     time '100h'
-//     tag { sample }
-//     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+// 2. 
+process runKrakenClassifyReads_process {
+    cpus 6
+    memory '150 GB'
+    time '100h'
+    tag { sample }
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
     
-//     input:
-//     set sample, file(reads) from unmapped_kraken
+    input:
+    set sample, file(reads) from unmapped_kraken
     
-//     output:
-//     set sample, file("kraken_output.txt") into kraken_classified_reads 
+    output:
+    set sample, file("kraken_output.txt") into kraken_classified_reads 
     
-//     """	
-//     kraken --db ${db} \
-//         --fastq-input \
-//         --paired ${reads.get(0)} ${reads.get(1)} \
-//         --threads 5 \
-//         --output kraken_output.txt
-//     """ 
-// }
+    """	
+    kraken --db ${db} \
+        --fastq-input \
+        --paired ${reads.get(0)} ${reads.get(1)} \
+        --threads 5 \
+        --output kraken_output.txt
+    """ 
+}
 
 // 3. 
 process runTrinityAssemble_process {
@@ -97,69 +96,56 @@ process runTrinityAssemble_process {
      """
  }
 
-// // 4.
-// process runKrakenClassifyFasta_process{
-//     cpus 6
-//     memory '150 GB'
-//     time '100h'
-//     tag { sample }
-//     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+// 4.
+process runKrakenClassifyFasta_process{
+    cpus 6
+    memory '150 GB'
+    time '100h'
+    tag { sample }
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
 
-//     input:
-//     set sample, file(fasta) from trinity_assembled_reads
+    input:
+    set sample, file(fasta) from trinity_assembled_reads
 
-//     output:
-//     set sample, file("kraken_outputFasta.txt") into kraken_classified_fasta 
+    output:
+    set sample, file("kraken_outputFasta.txt") into kraken_classified_fasta 
 
-//     """	
-//     kraken --db ${db} \
-//         --fasta-input ${fasta} \
-//         --threads 5 \
-//         --output kraken_outputFasta.txt
-//     """ 
-// }
+    """	
+    kraken --db ${db} \
+        --fasta-input ${fasta} \
+        --threads 5 \
+        --output kraken_outputFasta.txt
+    """ 
+}
 
+all_classified = kraken_classified_reads.merge( kraken_classified_fasta ) { listA, listB -> [ listA[0], [listA[1], listB[1]] ] }
 
-// star_results.subscribe { println it }
-// kraken_classified_reads.subscribe { println it }
-// kraken_classified_fasta.subscribe { println it }
-
-// all_classified = classified_reads.merge( classified_fasta ) { listA, listB -> [ listA[0], [listA[1], listB[1]] ] }
-// all_classified.println { it }
-
-// // 5. 
-// process runKronareport{
-//     cpus 8
-//     memory '200 GB'
-//     time '50h'
-//     tag { sample }
-//     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+// 5. 
+process runKronareport{
+    cpus 8
+    memory '200 GB'
+    time '50h'
+    tag { sample }
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
     
-//     input:
-//     set sample, file(kraken) from classified_reads
+    input:
+    set sample, file(kraken) from all_classified
     
-//     output:
-//     set sample, file("results.html") into html
+    output:
+    set sample, file("*") into html
 
-//     """
-    
-//     cut -f 2,3 ${kraken} > columns.txt
-//     ktImportTaxonomy columns.txt                \
-//        --tax ${taxonomy}                        \
-//        -o results.html
-
-//        //cut -f 2,3 caskiSubset_01/kraken_output.txt caskiSubset_02/kraken_output.txt caskiSubset_03/kraken_output.txt > data.txt
-//        //cut -f 2,3 caskiSubset_01/kraken_outputFasta.txt caskiSubset_02/kraken_outputFasta.txt caskiSubset_03/kraken_outputFasta.txt > dataFasta.txt
-
-//        //odds  = Channel.from([1, 3, 5, 7, 9]);
-//        //evens = Channel.from([2, 4, 6]);
-
-// //	 odds
-// //	  .merge( evens ) { o, e -> [o, e] }
-// //   	  .subscribe { println it }
-//     """
-// }
+    """
+    function doKrona {
+        cut -f 2,3 \$1 > \$(sed 's/.kraken/.krona/' <<< "\$1")
+        ktImportTaxonomy \$(sed 's/.kraken/.krona/' <<< "\$1") \
+        -tax ${taxonomy} \
+        -o \$(sed 's/.kraken/.html/' <<< "\$1")
+    }
+    doKrona ${kraken.get(0)}
+    doKrona ${kraken.get(1)}
+    """
+}
 
 
-// html.subscribe {println it}
+html.subscribe {println it}
 
