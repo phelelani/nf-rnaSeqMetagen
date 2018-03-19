@@ -18,9 +18,8 @@ To use the rnaSeqCount pipeline, the following dependencies are required:
 - [x] [MultiQC](http://multiqc.info/) - ```shub://phelelani/nf-rnaSeqMetagen:multiqc```
 
 ## _*Reference Genome and Indexes*_
-- [x] Reference Genome (.fa)
+- [x] Reference Genome (.fa) and Genome Annotation (.gtf) files
 - [x] Reference Genome Indexes (```bowtie2``` & ```STAR``` - see below on how to generate)
-- [x] Genome Annotation (.gtf)
 
 To generate the ```STAR``` and ```bowtie2``` indexes for the reference genome, run the following commands:
 ```
