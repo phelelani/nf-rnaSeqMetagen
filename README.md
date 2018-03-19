@@ -7,17 +7,17 @@
 
 # Pipeline Dependencies
 To use the rnaSeqCount pipeline, the following dependencies are required:
-## _*Softwares*_
+## 1. _*Softwares*_
 - [x] [Nextflow](https://www.nextflow.io/)
 - [x] [Singularity](http://singularity.lbl.gov/)
 
-## _*Singularity Containers*_
+## 2. _*Singularity Containers*_
 - [x] [STAR](https://github.com/alexdobin/STAR) - ```shub://phelelani/nf-rnaSeqMetagen:star```
 - [x] [Kraken](https://ccb.jhu.edu/software/kraken/) - ```shub://phelelani/nf-rnaSeqMetagen:kraken```
 - [x] [Trinity](https://github.com/trinityrnaseq/trinityrnaseq/wiki) - ```shub://phelelani/nf-rnaSeqMetagen:featurecounts```
 - [x] [MultiQC](http://multiqc.info/) - ```shub://phelelani/nf-rnaSeqMetagen:multiqc```
 
-## _*Reference Genome and Indexes*_
+## 3. _*Reference Genome and Indexes*_
 - [x] Reference Genome (.fa) and Genome Annotation (.gtf) files
 - [x] Reference Genome Indexes (```bowtie2``` & ```STAR``` - see below on how to generate)
 
