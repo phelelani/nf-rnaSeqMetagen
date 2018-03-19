@@ -17,7 +17,7 @@ db = params.db
 out_path.mkdir()
 
 // Create a new channel from input data/reads
-read_pair = Channel.fromFilePairs("${data_path}/*_R{1,2}.fq", type: 'file')
+read_pair = Channel.fromFilePairs("${data_path}/*_R{1,2}.fastq", type: 'file')
 
 // 1. 
 process runSTAR_process {
@@ -172,6 +172,6 @@ process runMultiQC_process {
 
     """
     /bin/hostname
-    multiqc `< ${star}` `< ${htseqcounts}` `< ${featurecounts}` --force
+    multiqc `< ${star}` --force
     """
 }
