@@ -2,7 +2,7 @@
 *nf-rnaSeqMetagen* is a [Nextflow](http://nextflow.io/) 
 
 <p align="center">
-  <img height="480" src="rnaSeqCount.png">
+  <img height="480" src="nf-rnaSeqMetagen.png">
 </p>
 
 # Pipeline Dependencies
@@ -12,10 +12,10 @@ To use the rnaSeqCount pipeline, the following dependencies are required:
 - [x] [Singularity](http://singularity.lbl.gov/)
 
 ## _*Singularity Containers*_
-- [x] [STAR](https://github.com/alexdobin/STAR) - ```shub://phelelani/nf-rnaSeqCount:star```
-- [x] [HTSeq-Counts](https://htseq.readthedocs.io/en/release_0.9.1/overview.html) - ```shub://phelelani/nf-rnaSeqCount:htseqcount```
-- [x] [featureCounts](http://subread.sourceforge.net/) - ```shub://phelelani/nf-rnaSeqCount:featurecounts```
-- [x] [MultiQC](http://multiqc.info/) - ```shub://phelelani/nf-rnaSeqCount:multiqc```
+- [x] [STAR](https://github.com/alexdobin/STAR) - ```shub://phelelani/nf-rnaSeqMetagen:star```
+- [x] [Kraken](https://ccb.jhu.edu/software/kraken/) - ```shub://phelelani/nf-rnaSeqMetagen:kraken```
+- [x] [Trinity](https://github.com/trinityrnaseq/trinityrnaseq/wiki) - ```shub://phelelani/nf-rnaSeqMetagen:featurecounts```
+- [x] [MultiQC](http://multiqc.info/) - ```shub://phelelani/nf-rnaSeqMetagen:multiqc```
 
 ## _*Reference Genome and Indexes*_
 - [x] Reference Genome (.fa)
