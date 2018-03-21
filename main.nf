@@ -1,23 +1,77 @@
 #!/usr/bin/env nextflow
 
-params.data = "/global/blast/ssc_data"
-params.taxonomy = "/global/blast/taxonomy"
-params.out = "/spaces/phelelani/ssc_data/nf-rnaSeqMetagen"
-params.db = "/global/blast/kraken_db/kraken_std"
-params.ref = "/global/blast/reference_genomes/Homo_sapiens/Ensembl/GRCh38/Sequence/WholeGenomeFasta/genome.fa"
-params.index = "/global/blast/reference_genomes/Homo_sapiens/Ensembl/GRCh38/Sequence/STARIndex" 
+// PIPELINE PARAMETERS - Edit if brave... Else, specify options on command line
+params.data      = "/spaces/phelelani/ssc_data/data_trimmed/inflated"                                                   // Path to where the input data is located (where fastq files are located).
+params.out       = "/spaces/phelelani/ssc_data/nf-rnaSeqMetagen"                                                          // Path to where the output should be directed.
+params.db        = "/global/blast/kraken_db/kraken_std"
+params.taxonomy  = "/global/blast/taxonomy"
+params.genome    = "/global/blast/reference_genomes/Homo_sapiens/Ensembl/GRCh38/Sequence/WholeGenomeFasta/genome.fa"    // The whole genome sequence
+params.index     = "/global/blast/reference_genomes/Homo_sapiens/Ensembl/GRCh38/Sequence/STARIndex"                     // Path to where the STAR index files are locaded
+params.bind      = '/global/;/spaces/'                                                                                  // Paths to be passed onto the singularity image
 
-out_path = file(params.out)
-taxonomy = params.taxonomy
-data_path = params.data
-ref = params.ref
-index = params.index
-db = params.db
+// DO NOT EDIT FROM HERE
+data_path        = file(params.data, type: 'dir')                                                                       // Path to where the input data is located (where fastq files are located). 
+out_path         = file(params.out, type: 'dir')                                                                        // Path to where the output should be directed.
+db               = file(params.db, type: 'dir')
+taxonomy         = file(params.taxonomy, type: 'dir')
+genome           = file(params.genome, type: 'file')                                                                    // The whole genome sequence
+index            = file(params.index, type: 'dir')                                                                      // Path to where the STAR index files are locaded 
+bind             = params.bind.split(';')          
+//======================================================================================================
+//
+//
+//
+//======================================================================================================
+// HELP MENU
+if (params.help) {
+    log.info ''
+    log.info "===================================="
+    log.info "         nf-rnaSeqMetagen v0.1        "
+    log.info "===================================="
+    log.info ''
+    log.info 'USAGE: '
+    log.info 'nextflow run main.nf --data /path/to/data --out /path/to/output --db /path/to/kraken-db --taxonomy /path/to/taxonomy --genome /path/to/genome.fa --index /path/to/STARIndex --bind /path/to/bind1;/path/to/bind2'
+    log.info ''
+    log.info 'HELP: '
+    log.info 'nextflow run main.nf --help'
+    log.info ''
+    log.info 'MANDATORY ARGUEMENTS:'
+    log.info '    --data     FOLDER    Path to where the input data is located (fastq | fq)'
+    log.info '    --out      FOLDER    Path to where the output should be directed (will be created if it does not exist).'
+    log.info '    --db       FOLDER    
+    log.info '    --taxonomy FOLDER   
+    log.info '    --genome   FILE      The whole genome sequence (fasta | fa | fna)'
+    log.info '    --index    FOLDER    Path to where the STAR index files are locaded'
+    log.info '    --bind     FOLDER(S) Paths to be passed onto the singularity image'
+    log.info ''
+    log.info "====================================\n"
+    exit 1
+}
 
+// RUN INFO
+log.info "===================================="
+log.info "           nf-rnaSeqCount           "
+log.info "===================================="
+log.info "Input data          : ${data_path}"
+log.info "Output path         : ${out_path}"
+log.info "Kraken database     : ${db}"
+log.info "Taxonomy database   : ${taxonomy}"
+log.info "Genome              : ${genome}"
+log.info "Genome Index (STAR) : ${index}"
+log.info "Paths to bind       : ${bind}"
+log.info "====================================\n"
+//======================================================================================================
+//
+//
+//
+//======================================================================================================
+// PIPELINE START
+//Create output directory
 out_path.mkdir()
 
-// Create a new channel from input data/reads
-read_pair = Channel.fromFilePairs("${data_path}/*_R{1,2}.fastq", type: 'file')
+// Get input reads
+read_pair = Channel.fromFilePairs("${data_path}/*R[1,2].fastq", type: 'file') 
+                   .ifEmpty { error "ERROR - Data input: \nOooops... Cannot find any '.fastq' or '.fq' files in ${data_path}. Please specify a folder with '.fastq' or '.fq' files."}
 
 // 1. 
 process runSTAR_process {
@@ -171,7 +225,36 @@ process runMultiQC_process {
     file('*') into multiQC
 
     """
-    /bin/hostname
     multiqc `< ${star}` --force
     """
 }
+//======================================================================================================
+//
+//
+//
+//======================================================================================================
+// WORKFLOW SUMMARY
+workflow.onComplete {
+    println "===================================="
+    println "Pipeline execution summary:"
+    println "===================================="
+    println "Execution command   : ${workflow.commandLine}"
+    println "Execution name      : ${workflow.runName}"
+    println "Workflow start      : ${workflow.start}"
+    println "Workflow end        : ${workflow.complete}"
+    println "Workflow duration   : ${workflow.duration}"
+    println "Workflow completed? : ${workflow.success}"
+    println "Work directory      : ${workflow.workDir}"
+    println "Project directory   : ${workflow.projectDir}"
+    println "Execution directory : ${workflow.launchDir}"
+    println "Configuration files : ${workflow.configFiles}"
+    println "Workflow containers : ${workflow.container}"
+    println "exit status : ${workflow.exitStatus}"
+    println "Error report: ${workflow.errorReport ?: '-'}"
+    println "===================================="
+}
+
+workflow.onError {
+    println "Oohhh DANG IT!!... Pipeline execution stopped with the following message: ${workflow.errorMessage}"
+}
+//======================================================================================================
