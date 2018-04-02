@@ -20,6 +20,7 @@ To use the rnaSeqCount pipeline, the following dependencies are required:
 ## 1.3. _*Reference Genome and Indexes*_
 - [x] Reference Genome (.fa) and Genome Annotation (.gtf) files
 - [x] Reference Genome Indexes (```bowtie2``` & ```STAR``` - see below on how to generate)
+- [x] Kraken database (Installation instructions: http://ccb.jhu.edu/software/kraken/MANUAL.html#installation)
 
 # 2. Optaining the ```nf-rnaSeqCount``` pipeline
 The ```nf-rnaSeqMetagen``` pipeline can be obtain using any of the following methods:
