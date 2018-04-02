@@ -36,12 +36,17 @@ The ```nf-rnaSeqMetagen``` pipeline can be obtain using any of the following met
 To generate the ```STAR``` and ```bowtie2``` indexes for the reference genome, run the following commands:
 ### 3.1. ```STAR``` index
 ```
-singularity exec --cleanenv containers/phelelani-rnaSeqCount-master-star.simg STAR --runThreadN 4 --runMode genomeGenerate --genomeDir <> --genomeFastaFiles <>
+singularity exec --cleanenv containers/phelelani-rnaSeqCount-master-star.simg \
+    STAR --runThreadN 4 \
+    --runMode genomeGenerate \
+    --genomeDir <> \
+    --genomeFastaFiles <>
 ```
 
 ### 3.2. ```bowtie2``` index
 ```
-singularity exec --cleanenv containers/phelelani-rnaSeqCount-master-star.simg bowtie2-build </path/to/genome.fa> </path/to/genome>
+singularity exec --cleanenv containers/phelelani-rnaSeqCount-master-star.simg \
+    bowtie2-build </path/to/genome.fa> </path/to/genome>
 ```
 
 # 4. Pipeline Execution
@@ -49,7 +54,12 @@ The ```nf-rnaSeqCount``` pipeline can be run in one of two ways:
 
 ### 4.1. Directly from the command line by supplying the required parameters
 ```
-nextflow run main.nf --data '/path/to/data' --out '/path/to/output' --genome '/path/to/genome.fa' --index '/path/to/STARIndex' --genes '/path/to/genes.gtf' --bind '/path/to/bind;/another/path/to/bind'
+nextflow run main.nf --data '/path/to/data' \
+    --out '/path/to/output' \
+    --genome '/path/to/genome.fa' \
+    --index '/path/to/STARIndex' \
+    --genes '/path/to/genes.gtf' \
+    --bind '/path/to/bind;/another/path/to/bind'
 ```
 
 ### 4.2 Edit main.nf:
