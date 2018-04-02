@@ -38,8 +38,8 @@ if (params.help) {
     log.info 'MANDATORY ARGUEMENTS:'
     log.info '    --data     FOLDER    Path to where the input data is located (fastq | fq)'
     log.info '    --out      FOLDER    Path to where the output should be directed (will be created if it does not exist).'
-    log.info '    --db       FOLDER    
-    log.info '    --taxonomy FOLDER   
+    log.info '    --db       FOLDER    Path to where the Kraken database is installed'
+    log.info '    --taxonomy FOLDER    Path to where the taxonomy database is installed'
     log.info '    --genome   FILE      The whole genome sequence (fasta | fa | fna)'
     log.info '    --index    FOLDER    Path to where the STAR index files are locaded'
     log.info '    --bind     FOLDER(S) Paths to be passed onto the singularity image'
@@ -77,7 +77,7 @@ read_pair = Channel.fromFilePairs("${data_path}/*R[1,2].fastq", type: 'file')
 process runSTAR_process {
     cpus 6
     memory '40 GB'
-    time '100h'
+    time '10h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -108,7 +108,7 @@ process runSTAR_process {
 process runKrakenClassifyReads_process {
     cpus 6
     memory '150 GB'
-    time '100h'
+    time '10h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -157,7 +157,7 @@ process runTrinityAssemble_process {
 process runKrakenClassifyFasta_process{
     cpus 6
     memory '150 GB'
-    time '100h'
+    time '10h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
