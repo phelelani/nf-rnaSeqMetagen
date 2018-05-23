@@ -1,28 +1,10 @@
 #!/usr/bin/env nextflow
-
-// PIPELINE PARAMETERS - Edit if brave... Else, specify options on command line
-params.data      = "/spaces/phelelani/ssc_data/data_trimmed/inflated"                                                   // Path to where the input data is located (where fastq files are located).
-params.out       = "/spaces/phelelani/ssc_data/nf-rnaSeqMetagen"                                                          // Path to where the output should be directed.
-params.db        = "/global/blast/kraken_db/kraken_std"
-params.taxonomy  = "/global/blast/taxonomy"
-params.genome    = "/global/blast/reference_genomes/Homo_sapiens/Ensembl/GRCh38/Sequence/WholeGenomeFasta/genome.fa"    // The whole genome sequence
-params.index     = "/global/blast/reference_genomes/Homo_sapiens/Ensembl/GRCh38/Sequence/STARIndex"                     // Path to where the STAR index files are locaded
-params.bind      = '/global/;/spaces/'                                                                                  // Paths to be passed onto the singularity image
-
-// DO NOT EDIT FROM HERE
-data_path        = file(params.data, type: 'dir')                                                                       // Path to where the input data is located (where fastq files are located). 
-out_path         = file(params.out, type: 'dir')                                                                        // Path to where the output should be directed.
-db               = file(params.db, type: 'dir')
-taxonomy         = file(params.taxonomy, type: 'dir')
-genome           = file(params.genome, type: 'file')                                                                    // The whole genome sequence
-index            = file(params.index, type: 'dir')                                                                      // Path to where the STAR index files are locaded 
-bind             = params.bind.split(';')          
-//======================================================================================================
 //
-//
-//
-//======================================================================================================
-// HELP MENU
+//  DO NOT EDIT FROM HERE!! - Unless you brave like King Shaka of course!
+/*  ======================================================================================================
+ *  HELP MENU
+ *  ======================================================================================================
+ */
 if (params.help) {
     log.info ''
     log.info "===================================="
@@ -47,8 +29,53 @@ if (params.help) {
     log.info "====================================\n"
     exit 1
 }
+//
+//
+/*  ======================================================================================================
+ *  CHECK ALL USER INPUTS
+ *  ======================================================================================================
+ */
+if(params.data == null) {
+    exit 1, "\nPlease enter a directory with input FASTQ/FASTQ.GZ files."
+} else{
+    data_path = file(params.data, type: 'dir')  // Path to where the input data is located (where fastq files are located).
+}
 
-// RUN INFO
+if(params.out == null) {
+    params.out = "${baseDir}/results_nf-rnaSeqCount"
+} else{
+    out_path = file(params.out, type: 'dir')   // Path to where the output should be directed.
+}
+
+if(params.db== null) {
+    exit 1, "Please provide the KRAKEN database directory."
+} else{
+    genome = file(params.db, type: 'dir')  // The KRAKEN database.
+}
+
+if(params.taxonomy == null) {
+    exit 1, "Please provide the taxonomy database."
+} else{
+    genome = file(params.taxonomy, type: 'dir')  // The taxonomy database file.
+}
+
+if(params.genome == null) {
+    exit 1, "Please provide a FASTA sequence of the reference genome."
+} else{
+    genome = file(params.genome, type: 'file')  // The whole genome sequence.
+}
+
+if(params.index == null) {
+    exit 1, "Please provide a STAR index."
+} else{
+    index = file(params.index, type: 'dir')  // Path to where the STAR index files are locaded.
+}
+//
+//
+/*  ======================================================================================================
+ *  RUN INFO
+ *  ======================================================================================================
+ */
 log.info "===================================="
 log.info "           nf-rnaSeqCount           "
 log.info "===================================="
@@ -60,20 +87,20 @@ log.info "Genome              : ${genome}"
 log.info "Genome Index (STAR) : ${index}"
 log.info "Paths to bind       : ${bind}"
 log.info "====================================\n"
-//======================================================================================================
 //
 //
-//
-//======================================================================================================
-// PIPELINE START
-//Create output directory
+/*  ======================================================================================================
+ *  PIPELINE START
+ *  ======================================================================================================
+ */
+// Create output directory
 out_path.mkdir()
 
 // Get input reads
 read_pair = Channel.fromFilePairs("${data_path}/*R[1,2].fastq", type: 'file') 
-                   .ifEmpty { error "ERROR - Data input: \nOooops... Cannot find any '.fastq' or '.fq' files in ${data_path}. Please specify a folder with '.fastq' or '.fq' files."}
+.ifEmpty { error "ERROR - Data input: \nOooops... Cannot find any '.fastq' or '.fq' files in ${data_path}. Please specify a folder with '.fastq' or '.fq' files."}
 
-// 1. 
+// 1.  Align reads to reference genome
 process runSTAR_process {
     cpus 6
     memory '40 GB'
@@ -104,7 +131,7 @@ process runSTAR_process {
     """ 
 }
 
-// 2. 
+// 2. Run KRAKEN to classify the raw reads that aren't mapped to the reference genome.
 process runKrakenClassifyReads_process {
     cpus 6
     memory '150 GB'
@@ -117,18 +144,19 @@ process runKrakenClassifyReads_process {
     set sample, file(reads) from unmapped_kraken
     
     output:
-    set sample, file("kraken_report_reads.krak") into kraken_classified_reads 
+    set sample, file("${sample}_reads.krak") into kraken_classified_reads 
     
     """	
+    /bin/hostname
     kraken --db ${db} \
         --fastq-input \
         --paired ${reads.get(0)} ${reads.get(1)} \
         --threads 5 \
-        --output kraken_report_reads.krak
+        --output ${sample}_reads.krak
     """ 
 }
 
-// 3. 
+// 3. Assemble the reads into longer contigs/sequences for classification.
 process runTrinityAssemble_process {
      cpus 6
      memory '150 GB'
@@ -153,7 +181,7 @@ process runTrinityAssemble_process {
      """
  }
 
-// 4.
+// 4. Run KRAKEN to classify the assembled FASTA sequences.
 process runKrakenClassifyFasta_process{
     cpus 6
     memory '150 GB'
@@ -166,19 +194,20 @@ process runKrakenClassifyFasta_process{
     set sample, file(fasta) from trinity_assembled_reads
 
     output:
-    set sample, file("kraken_report_fasta.krak") into kraken_classified_fasta 
+    set sample, file("${sample}_fasta.krak") into kraken_classified_fasta 
 
     """	
     kraken --db ${db} \
         --fasta-input ${fasta} \
         --threads 5 \
-        --output kraken_report_fasta.krak
+        --output ${sample}_fasta.krak
     """ 
 }
 
+// For each sample, create a list with [ SAMPLE_NAME, READ, FASTA ] by merging the classified outputs (reads and fasta) from KRAKEN 
 all_classified = kraken_classified_reads.merge( kraken_classified_fasta ) { listA, listB -> [ listA[0], [listA[1], listB[1]] ] }
 
-// 5. 
+// 5. Create that pretty KRONA report for all samples (reads and fasta)
 process runKronareport{
     cpus 8
     memory '5 GB'
@@ -195,11 +224,11 @@ process runKronareport{
 
     """
     function createChart {
-    cut -f 2,3 \$1 > \$(sed 's/.krak/.kron/' <<< "\$1")
-    ktImportTaxonomy \$(sed 's/.krak/.kron/' <<< "\$1") \
-        -tax ${taxonomy} \
-        -o \$(sed 's/.krak/.html/' <<< "\$1")
-    }
+        cut -f 2,3 \$1 > \$(sed 's/.krak/.kron/' <<< "\$1")
+        ktImportTaxonomy \$(sed 's/.krak/.kron/' <<< "\$1") \
+            -tax ${taxonomy} \
+            -o \$(sed 's/.krak/.html/' <<< "\$1")
+        }
     createChart ${kraken.get(0)}
     createChart ${kraken.get(1)}
     """
@@ -228,12 +257,11 @@ process runMultiQC_process {
     multiqc `< ${star}` --force
     """
 }
-//======================================================================================================
 //
-//
-//
-//======================================================================================================
-// WORKFLOW SUMMARY
+/*  ======================================================================================================
+ *  WORKFLOW SUMMARY 
+ *  ======================================================================================================
+ */
 workflow.onComplete {
     println "===================================="
     println "Pipeline execution summary:"
