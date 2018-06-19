@@ -47,16 +47,35 @@ if(params.out == null) {
     out_path = file(params.out, type: 'dir')   // Path to where the output should be directed.
 }
 
+switch ( params.filetype ) {
+case ['fastq','fq']:
+    ext = params.filetype
+    read_file_cmd = ''
+    break
+case ['fastq.gz','fq.gz']:
+    ext = params.filetype
+    read_file_cmd = '--readFilesCommand gunzip -c'
+    break
+case ['fastq.bz2','fq.bz2']:
+    ext = params.filetype
+    read_file_cmd = '--readFilesCommand bunzip2 -c'
+    break
+case null:
+    ext = 'fastq.gz'
+    read_file_cmd = '--readFilesCommand gunzip -c'
+    break
+}
+
 if(params.db== null) {
     exit 1, "Please provide the KRAKEN database directory."
 } else{
-    genome = file(params.db, type: 'dir')  // The KRAKEN database.
+    db = file(params.db, type: 'dir')  // The KRAKEN database.
 }
 
 if(params.taxonomy == null) {
     exit 1, "Please provide the taxonomy database."
 } else{
-    genome = file(params.taxonomy, type: 'dir')  // The taxonomy database file.
+    taxonomy = file(params.taxonomy, type: 'dir')  // The taxonomy database file. 
 }
 
 if(params.genome == null) {
@@ -70,6 +89,11 @@ if(params.index == null) {
 } else{
     index = file(params.index, type: 'dir')  // Path to where the STAR index files are locaded.
 }
+if(params.bind == null) {
+    bind = "No paths specified for binding to Singularity images! I will assume the data lies somewhere in the '$HOME' directory."
+} else{
+    bind = params.bind.split(';')  // Paths to be passed onto the singularity image
+}
 //
 //
 /*  ======================================================================================================
@@ -81,6 +105,8 @@ log.info "           nf-rnaSeqCount           "
 log.info "===================================="
 log.info "Input data          : ${data_path}"
 log.info "Output path         : ${out_path}"
+log.info "Input file extension  : $ext"
+log.info "STAR readFile command : $read_file_cmd"
 log.info "Kraken database     : ${db}"
 log.info "Taxonomy database   : ${taxonomy}"
 log.info "Genome              : ${genome}"
@@ -97,13 +123,13 @@ log.info "====================================\n"
 out_path.mkdir()
 
 // Get input reads
-read_pair = Channel.fromFilePairs("${data_path}/*R[1,2].fastq", type: 'file') 
+read_pair = Channel.fromFilePairs("${data_path}/*{R,read}[1,2].${ext}", type: 'file') 
 .ifEmpty { error "ERROR - Data input: \nOooops... Cannot find any '.fastq' or '.fq' files in ${data_path}. Please specify a folder with '.fastq' or '.fq' files."}
 
-// 1.  Align reads to reference genome
+// 1.  ALIGN READS TO REFERENCE GENOME
 process runSTAR_process {
     cpus 6
-    memory '40 GB'
+    memory '60 GB'
     time '10h'
     scratch '$HOME/tmp'
     tag { sample }
@@ -113,17 +139,18 @@ process runSTAR_process {
     set sample, file(reads) from read_pair
     
     output:
-    set sample, file("${sample}_*") into star_results
+    set sample, file("${sample}*.{out,tab}") into star_results
     set sample, file("${sample}_Unmapped*") into unmapped_kraken, unmapped_trinity
     
     """	
+    /bin/hostname
     STAR --runMode alignReads \
-       --genomeDir ${index} \
-       --readFilesIn ${reads.get(0)} ${reads.get(1)} \
-       --runThreadN 5 \
-       --outSAMtype BAM SortedByCoordinate \
-       --outReadsUnmapped Fastx \
-       --outFileNamePrefix ${sample}_
+        --genomeDir ${index} ${read_file_cmd} \
+        --readFilesIn ${reads.get(0)} ${reads.get(1)} \
+        --runThreadN 5 \
+        --outSAMtype BAM SortedByCoordinate \
+        --outReadsUnmapped Fastx \
+        --outFileNamePrefix ${sample}_
        
     sed -i 's|\\s.[0-9]\$|\\/1|g' ${sample}_Unmapped.out.mate1 
     sed -i 's|\\s.[0-9]\$|\\/2|g' ${sample}_Unmapped.out.mate2
@@ -135,7 +162,7 @@ process runSTAR_process {
 process runKrakenClassifyReads_process {
     cpus 6
     memory '150 GB'
-    time '10h'
+    time '20h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -205,12 +232,14 @@ process runKrakenClassifyFasta_process{
 }
 
 // For each sample, create a list with [ SAMPLE_NAME, READ, FASTA ] by merging the classified outputs (reads and fasta) from KRAKEN 
-all_classified = kraken_classified_reads.merge( kraken_classified_fasta ) { listA, listB -> [ listA[0], [listA[1], listB[1]] ] }
+kraken_classified_reads.join(kraken_classified_fasta)
+.map { it -> [ it[0], [ it[1], it[2] ] ] }
+.set { all_classified }
 
-// 5. Create that pretty KRONA report for all samples (reads and fasta)
+//5. Create that pretty KRONA report for all samples (reads and fasta)
 process runKronareport{
     cpus 8
-    memory '5 GB'
+    memory '16 GB'
     time '10h'
     scratch '$HOME/tmp'
     tag { sample }
@@ -221,6 +250,7 @@ process runKronareport{
     
     output:
     set sample, file("*") into html
+    set sample, file("*.kron") into krona_report
 
     """
     function createChart {
@@ -241,23 +271,71 @@ star_results.collectFile () { item -> [ 'qc_star.txt', "${item.get(1).find { it 
 // 6. Get QC for STAR, HTSeqCounts and featureCounts
 process runMultiQC_process {
     cpus 1
-    memory '5 GB'
+    memory '10 GB'
     time '10h'
     scratch '$HOME/tmp'
-    tag { sample }
+    tag { "Get QC Information" }
     publishDir "$out_path/report_QC", mode: 'copy', overwrite: false
-
+    
     input:
-    file(star) from qc_star
-
+        file(star) from qc_star
+    
     output:
-    file('*') into multiQC
-
+        file('*') into multiQC
+    
     """
     multiqc `< ${star}` --force
     """
 }
-//
+
+// 7a. Collect all the krona file locations and put them in a text file
+krona_report.collectFile () { item -> [ 'fasta_krona_report.txt', "${item.get(1).find { it =~ 'fasta.kron' } }" + '\n' ] }
+.set { krona_report_list } 
+
+// 7b. Prepare data for creating the matrix for UpSet: json file, taxonomy file, and sample taxids 
+process runPrepareMatrixData {
+    cpus 1
+    memory '5 GB'
+    time '2h'
+    scratch '$HOME/tmp'
+    tag { "Prepare Matrix Data" }
+    publishDir "$out_path/upset_data", mode: 'copy', overwrite: false
+    echo 'true'
+    
+    input:
+    file(list) from krona_report_list
+    
+    output:
+    file("*") into final_list
+       
+    shell:
+    database = "${db}"
+    file_list = "${list}"
+    json_file = "upset_data.json"
+    names_file = "names_table.dmp"
+    template 'get_taxons.sh'
+}
+
+// 7 Create the UpSet matrix
+process runCreateMatrix {
+    cpus 1
+    memory '5 GB'
+    time '2h'
+    scratch '$HOME/tmp'
+    tag { "Create UpSet Matrix" }
+    publishDir "$out_path/upset_data", mode: 'copy', overwrite: false
+    echo 'true'
+    
+    input:
+    file(list) from final_list
+    
+    output:
+    file("*") into the_matrix
+       
+    shell:
+    template 'create_matrix.R'
+}
+
 /*  ======================================================================================================
  *  WORKFLOW SUMMARY 
  *  ======================================================================================================
