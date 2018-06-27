@@ -101,7 +101,7 @@ if(params.bind == null) {
  *  ======================================================================================================
  */
 log.info "===================================="
-log.info "           nf-rnaSeqCount           "
+log.info "           nf-rnaSeqMetagen         "
 log.info "===================================="
 log.info "Input data          : ${data_path}"
 log.info "Output path         : ${out_path}"
