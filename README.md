@@ -34,21 +34,29 @@ The ```nf-rnaSeqMetagen``` pipeline can be obtain using any of the following met
 - [x] ```nextflow clone phelelani/nf-rnaSeqMetagen <target-dir>```
 
 # 3. Generating genome indexes.
-To generate the ```STAR``` and ```bowtie2``` indexes for the reference genome, run the following commands:
-### 3.1. ```STAR``` index
+To generate the ```STAR``` and ```bowtie2``` indexes for the reference genome, the ```Singularity``` containers first need to be downloaded from [Singularity Hub](ttps://www.singularity-hub.org). The ```prepareData.nf``` script can be used to download and prepare data (generate indexes) to be be used with the ```nf-rnaSeqCount``` pipeline. The ```prepareData.nf``` can be run in three different modes:
+- [x] ```getContainers```: for downloading the required ```Singularity``` containers.
+- [x] ```generateStarIndex```: for generating ```STAR``` indexes.
+- [x] ```generateBowtieIndex```: for generating ```bowtie2``` indexes.
+
+To generate the genome indexes, run the following commands in the pipeline directory:
+
+### 3.1 Download ```Singularity``` containers:
 ```
-singularity exec --cleanenv containers/phelelani-rnaSeqCount-master-star.simg \
-    STAR --runThreadN 4 \
-    --runMode genomeGenerate \
-    --genomeDir <> \
-    --genomeFastaFiles <>
+nextflow run prepareData.nf --mode getContainers -profile pbsPrepare
 ```
 
-### 3.2. ```bowtie2``` index
+### 3.2. Generate ```STAR``` index
 ```
-singularity exec --cleanenv containers/phelelani-rnaSeqCount-master-star.simg \
-    bowtie2-build </path/to/genome.fa> </path/to/genome>
+nextflow run prepareData.nf --mode generateStarIndex -profile pbsPrepare
 ```
+
+### 3.3. Generate ```bowtie2``` index
+```
+nextflow run prepareData.nf --mode generateBowtieIndex -profile pbsPrepare
+```
+
+NB: The ```-profile``` option can either be one of depending on the scheduler.
 
 # 4. Pipeline Execution
 The ```nf-rnaSeqCount``` pipeline can be run in one of two ways:
