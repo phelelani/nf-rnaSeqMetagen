@@ -38,6 +38,7 @@ To generate the ```STAR``` and ```bowtie2``` indexes for the reference genome, t
 - [x] ```getContainers```: for downloading the required ```Singularity``` containers.
 - [x] ```generateStarIndex```: for generating ```STAR``` indexes.
 - [x] ```generateBowtieIndex```: for generating ```bowtie2``` indexes.
+- [x] ```generateKrakenDB``` : for downloading and generating ```kraken``` database.
 
 To generate the genome indexes, run the following commands in the pipeline directory:
 
@@ -61,6 +62,40 @@ NB: The ```-profile``` option can either be one of depending on the scheduler.
 # 4. Pipeline Execution
 The ```nf-rnaSeqCount``` pipeline can be run in one of two ways:
 
+### 4.1 By editing the ```parameters.config``` file and specifying the parameters (recommended)
+Edit ```main.config```:
+```
+/*
+ *  USE THIS FILE TO SPECIFY YOUR PARAMETERS. ALLOWED PARAMETERS ARE AS FOLLOWS:
+ *  ============================================================================
+ *  data     : Path to where the input data is located (where fastq files are located).
+ *  out      : Path to where the output should be directed.
+ *  db       :
+ *  taxonomy :
+ *  genome   : The whole genome sequence.
+ *  index    : Path to where the STAR index files are locaded.
+ *  bind     : Paths to be passed onto the singularity image (Semi-colon separated).
+ *  help     : Print out help menu. Passed as "--help" to the "main.nf" script for detailed information
+ */
+params {
+    data     = "/path/to/data"
+    out      = "/path/to/output"
+    filetype = "fastq.gz"
+    db       = "/path/to/kraken_db/"
+    taxonomy = "/path/to/taxonomy"
+    genome   = "/path/to/genome.fa"
+    index    = "/path/to/STARIndex"
+    bind     =  "/path/to/bind_1;/path/to/bind_2"
+    help     = null
+}
+
+```
+
+To run the pipeline:
+```
+nextflow run main.nf
+```
+
 ### 4.1. Directly from the command line by supplying the required parameters
 ```
 nextflow run main.nf --data '/path/to/data' \
@@ -71,21 +106,5 @@ nextflow run main.nf --data '/path/to/data' \
     --bind '/path/to/bind;/another/path/to/bind'
 ```
 
-### 4.2 Edit main.nf:
-```
-params.data     = '/path/to/data'                       // Path to where the input data is located (where fastq files are located).
-params.out      = '/path/to/output'                     // Path to where the output should be directed.
-params.db       = '/path/to/kraken-db'                  // Path to where the Kraken database is installed.
-params.taxonomy = '/path/to/taxonomy'                   // Path to where the taxonomy database is installed.
-params.genome   = '/path/to/genome.fa'                  // The whole genome sequence (fasta | fa | fna).
-params.index    = '/path/to/STARIndex'                  // Path to where the STAR index files are locaded.
-params.bind     = '/path/to/bind;/another/path/to/bind' // Paths to be passed onto the singularity image (Semi-colon separated).
-
-```
-
-To run the pipeline:
-```
-nextflow run main.nf
-```
 
 # References
