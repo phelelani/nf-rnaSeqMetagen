@@ -24,6 +24,7 @@ From:singularityhub/ubuntu
     cd /opt \
         && git clone https://github.com/DerrickWood/kraken.git \
         && cd kraken \
+        && wget https://raw.githubusercontent.com/phelelani/nf-rnaSeqMetagen/master/templates/download_taxonomy.sh -P scripts/
         && ./install_kraken.sh bin
 
     ### Install Krona
