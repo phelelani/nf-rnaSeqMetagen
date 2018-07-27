@@ -1,5 +1,14 @@
 #!/usr/bin/env nextflow
 
+/* PARAMETERS NEEDED:
+ --genome      : Can be specified in prepare_data.config
+ --genes       : Can be specified in prepare_data.config
+ --kraken_dir  : Can be specified in prepare_data.config
+ --bind        : Can be specified in prepare_data.config
+ --mode        : < getContainers | generateStarIndex | generateBowtieIndex | generateKrakenDB >
+ -profile      : < prepare | pbsPrepare >
+*/
+
 def checkGenome() {
     if(params.genome == null) {
         exit 1, "Please provide a FASTA sequence of the reference genome."
