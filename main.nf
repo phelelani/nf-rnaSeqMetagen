@@ -130,7 +130,7 @@ read_pair = Channel.fromFilePairs("${data_path}/*{R,read}[1,2].${ext}", type: 'f
 process runSTAR_process {
     cpus 6
     memory '60 GB'
-    time '10h'
+    time '48h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -162,7 +162,7 @@ process runSTAR_process {
 process runKrakenClassifyReads_process {
     cpus 6
     memory '150 GB'
-    time '20h'
+    time '48sh'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -187,7 +187,7 @@ process runKrakenClassifyReads_process {
 process runTrinityAssemble_process {
      cpus 6
      memory '150 GB'
-     time '50h'
+     time '72h'
     scratch '$HOME/tmp'
      tag { sample }
      publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -212,7 +212,7 @@ process runTrinityAssemble_process {
 process runKrakenClassifyFasta_process{
     cpus 6
     memory '150 GB'
-    time '10h'
+    time '12h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -240,7 +240,7 @@ kraken_classified_reads.join(kraken_classified_fasta)
 process runKronareport{
     cpus 8
     memory '16 GB'
-    time '10h'
+    time '12h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -272,7 +272,7 @@ star_results.collectFile () { item -> [ 'qc_star.txt', "${item.get(1).find { it 
 process runMultiQC_process {
     cpus 1
     memory '10 GB'
-    time '10h'
+    time '12h'
     scratch '$HOME/tmp'
     tag { "Get QC Information" }
     publishDir "$out_path/report_QC", mode: 'copy', overwrite: false

@@ -73,7 +73,7 @@ switch (params.mode) {
         process generateSTARIndex {
             cpus 13
             memory '100 GB'
-            time '20h'
+            time '24h'
             scratch '$HOME/tmp'
             tag { "Generate Star Index" }
             publishDir "$out_path", mode: 'copy', overwrite: true
@@ -103,7 +103,7 @@ switch (params.mode) {
             container "$baseDir/containers/phelelani-nf-rnaSeqMetagen-master-trinity.simg"
             cpus 13
             memory '100 GB'
-            time '20h'
+            time '24h'
             scratch '$HOME/tmp'
             tag { "Generate Bowtie2 Index" }
             publishDir "$out_path", mode: 'copy', overwrite: false
@@ -126,7 +126,7 @@ switch (params.mode) {
         process generateKrakenDB {
             cpus 7
             memory '200 GB'
-            time '30h'
+            time '48h'
             scratch '$HOME/tmp'
             tag { "Generate Kraken DB" }
             publishDir "$out_path", mode: 'copy', overwrite: true
