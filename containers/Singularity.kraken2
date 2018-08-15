@@ -35,6 +35,13 @@ cd /opt \
     && ./updateTaxonomy.sh \
     && rm /opt/KronaTools-2.7.tar
 
+## Instal NCBI BLAST+
+cd /opt \
+    && wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.7.1/ncbi-blast-2.7.1+-x64-linux.tar.gz \
+    && tar -vxf ncbi-blast-2.7.1+-x64-linux.tar.gz \
+    && rm /opt/ncbi-blast-2.7.1+-x64-linux.tar.gz
+
 %environment
 export PATH=/opt/kraken2/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export PATH=/opt/ncbi-blast-2.7.1+/bin:$PATH
