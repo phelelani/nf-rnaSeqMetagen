@@ -135,7 +135,7 @@ switch (params.mode) {
             file("*") into kraken_db
         
             """
-            kraken-build --standard --threads 6 --db kraken_std
+            kraken2-build --standard --threads 6 --db kraken2_std
             """
         }   
 
