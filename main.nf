@@ -128,9 +128,9 @@ read_pair = Channel.fromFilePairs("${data_path}/*{R,read}[1,2].${ext}", type: 'f
 
 // 1.  ALIGN READS TO REFERENCE GENOME
 process runSTAR_process {
-    cpus 6
-    memory '60 GB'
-    time '48h'
+    cpus 7
+    memory '40 GB'
+    time '24h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -147,8 +147,8 @@ process runSTAR_process {
     STAR --runMode alignReads \
         --genomeDir ${index} ${read_file_cmd} \
         --readFilesIn ${reads.get(0)} ${reads.get(1)} \
-        --runThreadN 5 \
-        --outSAMtype BAM SortedByCoordinate \
+        --runThreadN 6 \
+        --outSAMtype BAM Unsorted \
         --outReadsUnmapped Fastx \
         --outFileNamePrefix ${sample}_
        
@@ -160,9 +160,9 @@ process runSTAR_process {
 
 // 2. Run KRAKEN to classify the raw reads that aren't mapped to the reference genome.
 process runKrakenClassifyReads_process {
-    cpus 6
-    memory '150 GB'
-    time '48sh'
+    cpus 7
+    memory '40 GB'
+    time '24h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -171,23 +171,26 @@ process runKrakenClassifyReads_process {
     set sample, file(reads) from unmapped_kraken
     
     output:
-    set sample, file("${sample}_reads.krak") into kraken_classified_reads 
+    set sample, file("${sample}_reads.krak") into kraken_reads_report
+    set sample, file("${sample}_classified_*.fastq") into kraken_classified_reads
+    set sample, file("${sample}_unclassified_*.fastq") into kraken_unclassified_reads
     
     """	
     /bin/hostname
-    kraken --db ${db} \
-        --fastq-input \
+    kraken2 --db ${db} \
         --paired ${reads.get(0)} ${reads.get(1)} \
-        --threads 5 \
+        --threads 6 \
+        --classified-out ${sample}_classified#.fastq \
+        --unclassified-out ${sample}_unclassified#.fastq \
         --output ${sample}_reads.krak
     """ 
 }
 
 // 3. Assemble the reads into longer contigs/sequences for classification.
 process runTrinityAssemble_process {
-     cpus 6
+     cpus 7
      memory '150 GB'
-     time '72h'
+     time '24h'
     scratch '$HOME/tmp'
      tag { sample }
      publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -199,20 +202,21 @@ process runTrinityAssemble_process {
      set sample, "trinity_${sample}/Trinity.fasta" into trinity_assembled_reads
 
      """
+     /bin/hostname
      Trinity --seqType fq \
         --max_memory 150G \
         --left ${reads.get(0)} --right ${reads.get(1)} \
         --SS_lib_type RF \
-        --CPU 5 \
+        --CPU 6 \
         --output  trinity_${sample}
      """
  }
 
 // 4. Run KRAKEN to classify the assembled FASTA sequences.
 process runKrakenClassifyFasta_process{
-    cpus 6
-    memory '150 GB'
-    time '12h'
+    cpus 7
+    memory '40 GB'
+    time '24h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
@@ -221,32 +225,36 @@ process runKrakenClassifyFasta_process{
     set sample, file(fasta) from trinity_assembled_reads
 
     output:
-    set sample, file("${sample}_fasta.krak") into kraken_classified_fasta 
+    set sample, file("${sample}_fasta.krak") into kraken_fasta_report
+    set sample, file("${sample}_classified.fasta") into kraken_classified_fasta
+    set sample, file("${sample}_unclassified.fasta") into kraken_unclassified_fasta
 
     """	
-    kraken --db ${db} \
-        --fasta-input ${fasta} \
-        --threads 5 \
+    kraken2 --db ${db} \
+        ${fasta} \
+        --threads 6 \
+        --classified-out ${sample}_classified.fasta \
+        --unclassified-out ${sample}_unclassified.fasta \
         --output ${sample}_fasta.krak
     """ 
 }
 
 // For each sample, create a list with [ SAMPLE_NAME, READ, FASTA ] by merging the classified outputs (reads and fasta) from KRAKEN 
-kraken_classified_reads.join(kraken_classified_fasta)
+kraken_reads_report.join(kraken_fasta_report)
 .map { it -> [ it[0], [ it[1], it[2] ] ] }
-.set { all_classified }
+.set { all_kraken_reports }
 
 //5. Create that pretty KRONA report for all samples (reads and fasta)
 process runKronareport{
-    cpus 8
-    memory '16 GB'
-    time '12h'
+    cpus 1
+    memory '1 GB'
+    time '6h'
     scratch '$HOME/tmp'
     tag { sample }
     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
     
     input:
-    set sample, file(kraken) from all_classified
+    set sample, file(kraken) from all_kraken_reports
     
     output:
     set sample, file("*") into html
@@ -256,7 +264,6 @@ process runKronareport{
     function createChart {
         cut -f 2,3 \$1 > \$(sed 's/.krak/.kron/' <<< "\$1")
         ktImportTaxonomy \$(sed 's/.krak/.kron/' <<< "\$1") \
-            -tax ${taxonomy} \
             -o \$(sed 's/.krak/.html/' <<< "\$1")
         }
     createChart ${kraken.get(0)}
@@ -264,6 +271,7 @@ process runKronareport{
     """
 }
 
+//-tax ${taxonomy} \
 // 6a. Collect files for STAR QC
 star_results.collectFile () { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
 .set { qc_star }
@@ -271,11 +279,11 @@ star_results.collectFile () { item -> [ 'qc_star.txt', "${item.get(1).find { it 
 // 6. Get QC for STAR, HTSeqCounts and featureCounts
 process runMultiQC_process {
     cpus 1
-    memory '10 GB'
-    time '12h'
+    memory '2 GB'
+    time '1h'
     scratch '$HOME/tmp'
     tag { "Get QC Information" }
-    publishDir "$out_path/report_QC", mode: 'copy', overwrite: false
+    publishDir "$out_path/report_QC", mode: 'copy', overwrite: true
     
     input:
         file(star) from qc_star
@@ -293,13 +301,13 @@ krona_report.collectFile () { item -> [ 'fasta_krona_report.txt', "${item.get(1)
 .set { krona_report_list } 
 
 // 7b. Prepare data for creating the matrix for UpSet: json file, taxonomy file, and sample taxids 
-process runPrepareMatrixData {
+process runPrepareMatrixData_process {
     cpus 1
-    memory '5 GB'
-    time '2h'
+    memory '1 GB'
+    time '1h'
     scratch '$HOME/tmp'
     tag { "Prepare Matrix Data" }
-    publishDir "$out_path/upset_data", mode: 'copy', overwrite: false
+    publishDir "$out_path", mode: 'copy', overwrite: true
     echo 'true'
     
     input:
@@ -311,19 +319,19 @@ process runPrepareMatrixData {
     shell:
     database = "${db}"
     file_list = "${list}"
-    json_file = "upset_data.json"
+    json_file = "nf-rnaSeqMetagen.json"
     names_file = "names_table.dmp"
     template 'get_taxons.sh'
 }
 
 // 7 Create the UpSet matrix
-process runCreateMatrix {
+process runCreateMatrix_process {
     cpus 1
-    memory '5 GB'
-    time '2h'
+    memory '1 GB'
+    time '1h'
     scratch '$HOME/tmp'
     tag { "Create UpSet Matrix" }
-    publishDir "$out_path/upset_data", mode: 'copy', overwrite: false
+    publishDir "$out_path/upset/data/nf-rnaSeqMetagen", mode: 'copy', overwrite: true
     echo 'true'
     
     input:
