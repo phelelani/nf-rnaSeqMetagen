@@ -133,7 +133,7 @@ process runSTAR_process {
     time '24h'
     scratch '$HOME/tmp'
     tag { sample }
-    publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: true
     
     input:
     set sample, file(reads) from read_pair
@@ -165,7 +165,7 @@ process runKrakenClassifyReads_process {
     time '24h'
     scratch '$HOME/tmp'
     tag { sample }
-    publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: true
     
     input:
     set sample, file(reads) from unmapped_kraken
@@ -193,7 +193,7 @@ process runTrinityAssemble_process {
      time '24h'
     scratch '$HOME/tmp'
      tag { sample }
-     publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+     publishDir "$out_path/${sample}", mode: 'copy', overwrite: true
     
      input:
      set sample, file(reads) from unmapped_trinity
@@ -219,7 +219,7 @@ process runKrakenClassifyFasta_process{
     time '24h'
     scratch '$HOME/tmp'
     tag { sample }
-    publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: true
 
     input:
     set sample, file(fasta) from trinity_assembled_reads
@@ -251,7 +251,7 @@ process runKronareport{
     time '6h'
     scratch '$HOME/tmp'
     tag { sample }
-    publishDir "$out_path/${sample}", mode: 'copy', overwrite: false
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: true
     
     input:
     set sample, file(kraken) from all_kraken_reports
@@ -314,8 +314,9 @@ process runPrepareMatrixData_process {
     file(list) from krona_report_list
     
     output:
-    file("*") into final_list
-       
+    file("*") into whole_list
+    file("upset/data/nf-rnaSeqMetagen/*") into final_list
+
     shell:
     database = "${db}"
     file_list = "${list}"
