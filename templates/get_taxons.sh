@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
 
 rsync -avhP /opt/upset .
-mkdir nf-rnaSeqMetagen
+mkdir upset/data/nf-rnaSeqMetagen
+up_path=upset/data/nf-rnaSeqMetagen
 
 ## Get the taxid names
-awk -F "|" '$4 ~/scientific/ { gsub(/^[ \t]+|[ \t]+$|"'"|'"'/,"",$2); print $1$2}' !{database}/taxonomy/names.dmp > !{names_file}
+awk -F "|" '$4 ~/scientific/ { gsub(/^[ \t]+|[ \t]+$|"'"|'"'/,"",$2); print $1$2}' !{database}/taxonomy/names.dmp > "$up_path"/!{names_file}
 
 ## Get the taxids (unique) for each sample
 sample_num=0
 while read file
 do
-    awk '{ print $2 }' $file | sort -gu > nf-rnaSeqMetagen/`basename ${file%.kron}.taxon`
+    awk '{ print $2 }' $file | sort -gu > "$up_path"/`basename ${file%.kron}.taxon`
     (( sample_num++ ))
 done < !{file_list}
 
 ## Create a JSON file (goes with the CSV file) for UpSet
-cat <<EOF > nf-rnaSeqMetagen/!{json_file}
+cat <<EOF > "$up_path"/!{json_file}
 {
     "file": "data/nf-rnaSeqMetagen/nf-rnaSeqMetagen.csv",
     "name": "nf-rnaSeqMetagen",
@@ -32,4 +33,3 @@ cat <<EOF > nf-rnaSeqMetagen/!{json_file}
 }
 EOF
 
-mv nf-rnaSeqMetagen upset/data/
