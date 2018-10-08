@@ -46,4 +46,4 @@ colnames(names) <- c("taxid","taxname")
 the_table$Taxonomy <- names$taxname[match(rownames(the_table),names$taxid)]
 
 ## Write the matrix to a file
-write.csv(the_table, file="upset_data.csv")
+write.csv(the_table, file="nf-rnaSeqMetagen.csv")
