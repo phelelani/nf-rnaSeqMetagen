@@ -32,7 +32,6 @@ cd /opt \
     && tar -vxf KronaTools-2.7.tar \
     && cd KronaTools-2.7 \
     && ./install.pl \
-    && ./updateTaxonomy.sh \
     && rm /opt/KronaTools-2.7.tar
 
 ## Instal NCBI BLAST+
