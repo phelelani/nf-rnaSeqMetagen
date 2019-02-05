@@ -31,7 +31,7 @@ def checkKrakenDir() {
     if(params.kraken_dir == null) {
         exit 1, "Please provide a path to save the Kraken database"
     } else{
-        out_path = file(params.kraken_dir, type: 'file') 
+        out_path = file(params.kraken_dir, type: 'dir') 
     }
     return out_path
 }
@@ -60,10 +60,8 @@ switch (params.mode) {
             singularity pull ${link}
             """
         }
-
-        containers.subscribe { println it }
-
         break
+        
     case ['generateStarIndex']:
         
         checkGenome()
@@ -90,8 +88,6 @@ switch (params.mode) {
                 --sjdbOverhang 99
             """
         }
-    
-        star_index.subscribe { println it }
         break
 
     case ['generateBowtieIndex']:
@@ -115,8 +111,6 @@ switch (params.mode) {
             bowtie2-build --threads 12 ${genome} genome
             """
         }   
-    
-        bowtie_index.subscribe { println it }
         break
 
     case ['generateKrakenDB']:
@@ -136,9 +130,24 @@ switch (params.mode) {
         
             """
             kraken2-build --standard --threads 6 --db kraken2_std
+            kraken2-build --cleanup --db kraken2_std
             """
         }   
 
-        kraken_db.subscribe { println it }
+        process generateKrakenDB {
+            cpus 1
+            memory '5 GB'
+            time '48h'
+            scratch '$HOME/tmp'
+            tag { "Generate Taxonomy" }
+            publishDir "$out_path", mode: 'copy', overwrite: true
+
+            output:
+            file("*") into taxonomy
+            
+            """
+            /opt/KronaTools-2.7/updateTaxonomy.sh taxonomy
+            """
+        }   
         break
 }

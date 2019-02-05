@@ -128,12 +128,12 @@ read_pair = Channel.fromFilePairs("${data_path}/*{R,read}[1,2].${ext}", type: 'f
 
 // 1.  ALIGN READS TO REFERENCE GENOME
 process runSTAR_process {
-    cpus 7
-    memory '40 GB'
+    cpus 13
+    memory '50 GB'
     time '24h'
     scratch '$HOME/tmp'
     tag { sample }
-    publishDir "$out_path/${sample}", mode: 'copy', overwrite: true
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}*.{out,tab}"
     
     input:
     set sample, file(reads) from read_pair
@@ -147,7 +147,7 @@ process runSTAR_process {
     STAR --runMode alignReads \
         --genomeDir ${index} ${read_file_cmd} \
         --readFilesIn ${reads.get(0)} ${reads.get(1)} \
-        --runThreadN 6 \
+        --runThreadN 12 \
         --outSAMtype BAM Unsorted \
         --outReadsUnmapped Fastx \
         --outFileNamePrefix ${sample}_
@@ -160,12 +160,12 @@ process runSTAR_process {
 
 // 2. Run KRAKEN to classify the raw reads that aren't mapped to the reference genome.
 process runKrakenClassifyReads_process {
-    cpus 7
-    memory '40 GB'
+    cpus 13
+    memory '50 GB'
     time '24h'
     scratch '$HOME/tmp'
     tag { sample }
-    publishDir "$out_path/${sample}", mode: 'copy', overwrite: true
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}_*.fastq"
     
     input:
     set sample, file(reads) from unmapped_kraken
@@ -179,7 +179,7 @@ process runKrakenClassifyReads_process {
     /bin/hostname
     kraken2 --db ${db} \
         --paired ${reads.get(0)} ${reads.get(1)} \
-        --threads 6 \
+        --threads 12 \
         --classified-out ${sample}_classified#.fastq \
         --unclassified-out ${sample}_unclassified#.fastq \
         --output ${sample}_reads.krak
@@ -188,38 +188,38 @@ process runKrakenClassifyReads_process {
 
 // 3. Assemble the reads into longer contigs/sequences for classification.
 process runTrinityAssemble_process {
-     cpus 7
-     memory '150 GB'
-     time '24h'
+    cpus 13
+    memory '150 GB'
+    time '48h'
     scratch '$HOME/tmp'
-     tag { sample }
-     publishDir "$out_path/${sample}", mode: 'copy', overwrite: true
+    tag { sample }
+    //publishDir "$out_path/${sample}", mode: 'copy', overwrite: true
     
-     input:
-     set sample, file(reads) from unmapped_trinity
+    input:
+    set sample, file(reads) from unmapped_trinity
     
-     output:
-     set sample, "trinity_${sample}/Trinity.fasta" into trinity_assembled_reads
+    output:
+    set sample, "trinity_${sample}/Trinity.fasta" into trinity_assembled_reads
 
-     """
-     /bin/hostname
-     Trinity --seqType fq \
-        --max_memory 150G \
-        --left ${reads.get(0)} --right ${reads.get(1)} \
-        --SS_lib_type RF \
-        --CPU 6 \
-        --output  trinity_${sample}
-     """
+    """
+    /bin/hostname
+    Trinity --seqType fq \
+       --max_memory 150G \
+       --left ${reads.get(0)} --right ${reads.get(1)} \
+       --SS_lib_type RF \
+       --CPU 12 \
+       --output  trinity_${sample}
+    """
  }
 
 // 4. Run KRAKEN to classify the assembled FASTA sequences.
 process runKrakenClassifyFasta_process{
-    cpus 7
-    memory '40 GB'
+    cpus 13
+    memory '50 GB'
     time '24h'
     scratch '$HOME/tmp'
     tag { sample }
-    publishDir "$out_path/${sample}", mode: 'copy', overwrite: true
+    publishDir "$out_path/${sample}", mode: 'copy', overwrite: true, pattern: "*.fasta"
 
     input:
     set sample, file(fasta) from trinity_assembled_reads
@@ -232,7 +232,7 @@ process runKrakenClassifyFasta_process{
     """	
     kraken2 --db ${db} \
         ${fasta} \
-        --threads 6 \
+        --threads 12 \
         --classified-out ${sample}_classified.fasta \
         --unclassified-out ${sample}_unclassified.fasta \
         --output ${sample}_fasta.krak
@@ -264,10 +264,11 @@ process runKronareport{
     function createChart {
         cut -f 2,3 \$1 > \$(sed 's/.krak/.kron/' <<< "\$1")
         ktImportTaxonomy \$(sed 's/.krak/.kron/' <<< "\$1") \
+            -tax \$2 \
             -o \$(sed 's/.krak/.html/' <<< "\$1")
         }
-    createChart ${kraken.get(0)}
-    createChart ${kraken.get(1)}
+    createChart ${kraken.get(0)} ${taxonomy}
+    createChart ${kraken.get(1)} ${taxonomy}
     """
 }
 
