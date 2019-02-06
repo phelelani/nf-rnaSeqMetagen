@@ -40,7 +40,7 @@ def checkKrakenDir() {
 switch (params.mode) {
     case ['getContainers']:
         link_base = "shub://phelelani/nf-rnaSeqMetagen:"
-        shub_images = Channel.from( ["${link_base}star", "${link_base}kraken", "${link_base}trinity", "${link_base}multiqc"] )
+        shub_images = Channel.from( ["${link_base}star", "${link_base}kraken2", "${link_base}trinity", "${link_base}multiqc"] )
         
         process downloadContainers_process {
             cpus 1
