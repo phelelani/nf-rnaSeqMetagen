@@ -1,5 +1,22 @@
 # nf-rnaSeqMetagen
-*nf-rnaSeqMetagen* is a [Nextflow](http://nextflow.io/) 
+*nf-rnaSeqMetagen* is a [Nextflow](http://nextflow.io/)
+
+
+To use the `nf-rnaSeqMetagen` pipeline, the following dependencies are required:
+   1. Installed softwares:
+      - [`Nextflow`](https://www.nextflow.io/)
+      - [`Singularity`](http://singularity.lbl.gov/)
+   2. `Singularity` [containers](https://www.singularity-hub.org/collections/770) with the required applications/programs for executing the workflow:
+      - `nf-rnaSeqMetagen-kraken2.sif`
+      - `nf-rnaSeqMetagen-multiqc.sif`
+      - `nf-rnaSeqMetagen-star.sif`
+      - `nf-rnaSeqMetagen-trinity.sif`
+      - `nf-rnaSeqMetagen-upset.sif`
+   3. Reference genome, annotation and indexes
+      - Reference genome (`.fa`/`.fasta`) and genome annotation (`.gtf`) files.
+      - Reference genome indexes (`bowtie2` & `STAR` - see *1.3.* below on how to generate the indexes).
+ 
+---
 
 <p align="center">
   <img width="600" src="nf-rnaSeqMetagen.png">
