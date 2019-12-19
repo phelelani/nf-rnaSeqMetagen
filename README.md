@@ -2,7 +2,7 @@
 *nf-rnaSeqMetagen* is a [Nextflow](http://nextflow.io/) 
 
 <p align="center">
-  <img width="1000" src="nf-rnaSeqMetagen.png">
+  <img width="600" src="nf-rnaSeqMetagen.png">
 </p>
 
 # 1. Pipeline Dependencies
