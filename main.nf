@@ -209,7 +209,6 @@ switch (mode) {
             label 'mini'
             scratch '$HOME/tmp'
             tag { "Downloading: ${link}" }
-            maxForks 2
             publishDir "$PWD/containers", mode: 'copy', overwrite: true
             
             input:
@@ -219,7 +218,7 @@ switch (mode) {
             file("*.sif") into containers
             
             """
-            singularity pull nf-rnaSeqMetagen-${link.substring(32,)}.sif ${link}
+            singularity pull nf-rnaSeqMetagen-${link.substring(34,)}.sif ${link}
             """
         }
         break
@@ -257,7 +256,7 @@ switch (mode) {
         
         //
     case ['prep.BowtieIndex']:
-        process run_GenerateBowtie2Index {
+        process run_GenerateBowtieIndex {
             label 'maxi'
             tag { "Generate Bowtie2 Index" }
             publishDir "$index_dir", mode: 'copy', overwrite: true
