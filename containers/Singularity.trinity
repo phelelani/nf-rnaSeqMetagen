@@ -1,25 +1,39 @@
-Bootstrap: shub
-From: singularityhub/ubuntu
+Bootstrap: docker
+From: ubuntu:16.04
 
 %labels
-    Maintainer Phelelani.Mpangase@wits.ac.za
-    
-%post	       
-## Updates and essentials
+Maintainer Phelelani.Mpangase@wits.ac.za
+
+%post
+### Updates and essentials
 apt-get update
 apt-get install -y build-essential
-apt-get install -y wget unzip curl python python-dev python-pip rsync 
-apt-get install -y libncurses5-dev libncursesw5-dev libbz2-dev liblzma-dev libtbb-dev
-
-## Java
-apt-get install -y software-properties-common debconf-utils 
-add-apt-repository -y ppa:webupd8team/java
+apt-get install -y software-properties-common
 apt-get update
-echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
-apt-get install -y zlib1g-dev oracle-java8-installer 
 
-## Update PIP
-pip install -U pip
+## Other essentials
+apt-get install -y wget unzip curl git rsync
+apt-get install -y libncurses5-dev libncursesw5-dev libbz2-dev liblzma-dev libtbb-dev libz-dev
+
+## Java8
+apt-get install -y debconf-utils
+apt-add-repository -y ppa:openjdk-r/ppa
+apt-get update
+apt-get install -y openjdk-8-jre
+
+## Python3
+add-apt-repository -y ppa:deadsnakes/ppa
+apt-get update
+apt-get install -y python3.6 python3.6-dev
+
+## Python
+ln -sf /usr/bin/python3.6 /usr/bin/python
+ln -sf /usr/bin/python3.6 /usr/bin/python3
+
+## Install SETUP TOOLS and PIP
+cd /opt \
+    && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
+    && python3.6 get-pip.py
 
 ## Install Jellyfish
 cd /opt \
@@ -75,4 +89,4 @@ export PATH=/opt/bowtie2-2.3.4.1:$PATH
 export PATH=/opt/Salmon-latest_linux_x86_64/bin:$PATH
 export PATH=/opt/trinityrnaseq-Trinity-v2.6.5:$PATH
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle
-export PYTHONPATH=/usr/local/lib/python2.7/dist-packages
+export PYTHONPATH=/usr/local/lib/python3.6/dist-packages

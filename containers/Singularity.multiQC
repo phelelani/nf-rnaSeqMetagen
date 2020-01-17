@@ -1,18 +1,31 @@
-Bootstrap:shub
-From:singularityhub/ubuntu
+Bootstrap: docker
+From: ubuntu:16.04
 
 %labels
 Maintainer Phelelani.Mpangase@wits.ac.za
-    
-%post	       
+
+%post
 ## Updates and essentials
 apt-get update
 apt-get install -y build-essential
-apt-get install -y wget git python python-dev python-pip
+apt-get install -y software-properties-common
+add-apt-repository -y ppa:deadsnakes/ppa
+apt-get update
+apt-get install -y git curl python3.6 python3.6-dev
 
-## Install HTSeq using PIP
-pip install -U pip
-pip install multiqc
+## Install SETUP TOOLS and PIP
+cd /opt \
+    && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
+    && python3.6 get-pip.py
+
+## Install MultiQC
+cd /opt \
+    && git clone https://github.com/ewels/MultiQC.git \
+    && cd MultiQC \
+    && python3.6 setup.py install \
+    && cd /opt \
+    && rm -rf MultiQC
 
 %environment
-export PYTHONPATH=/usr/local/lib/python2.7/dist-packages
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8

@@ -1,23 +1,26 @@
-Bootstrap:shub
-From:singularityhub/ubuntu
+Bootstrap: docker
+From: ubuntu:16.04
 
 %labels
 Maintainer Phelelani.Mpangase@wits.ac.za
     
-%post	       
-#### Updates and essentials
+%post
+## Updates and essentials
 apt-get update
 apt-get install -y build-essential
+apt-get install -y software-properties-common
+apt-get update
+
+## Other essentials
 apt-get install -y wget git zlib1g-dev unzip
 
 ## Install STAR Aligner
 ## From Source: https://github.com/alexdobin/STAR
 cd /opt \
-    && wget https://github.com/alexdobin/STAR/archive/2.5.3a.tar.gz \
-    && tar -vxf 2.5.3a.tar.gz \
-    && make STAR -C STAR-2.5.3a/source \
-    && rm /opt/2.5.3a.tar.gz
+    && git clone https://github.com/alexdobin/STAR.git \
+    && cd STAR/source \
+    && make STAR
 
 %environment
-### Add paths to environment
-export PATH=/opt/STAR-2.5.3a/source:$PATH
+## Add paths to environment
+export PATH=/opt/STAR/source:$PATH
