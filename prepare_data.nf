@@ -116,7 +116,7 @@ switch (params.mode) {
     case ['generateKrakenDB']:
         
         checkKrakenDir()
-        
+                
         process generateKrakenDB {
             cpus 7
             memory '200 GB'
@@ -124,29 +124,12 @@ switch (params.mode) {
             scratch '$HOME/tmp'
             tag { "Generate Kraken DB" }
             publishDir "$out_path", mode: 'copy', overwrite: true
-            
+           
             output:
             file("*") into kraken_db
         
             """
-            kraken2-build --standard --threads 6 --db kraken2_std
-            kraken2-build --cleanup --db kraken2_std
-            """
-        }   
-
-        process generateKrakenDB {
-            cpus 1
-            memory '5 GB'
-            time '48h'
-            scratch '$HOME/tmp'
-            tag { "Generate Taxonomy" }
-            publishDir "$out_path", mode: 'copy', overwrite: true
-
-            output:
-            file("*") into taxonomy
-            
-            """
-            /opt/KronaTools-2.7/updateTaxonomy.sh taxonomy
+            kraken2-build --standard --threads 6 --db kraken2DB
             """
         }   
         break
