@@ -12,7 +12,7 @@ apt-get install -y software-properties-common
 apt-get update
 
 ## Other essentials
-apt-get install -y wget unzip curl git rsync
+apt-get install -y wget unzip curl git rsync cmake
 apt-get install -y libncurses5-dev libncursesw5-dev libbz2-dev liblzma-dev libtbb-dev libz-dev
 
 ## Java8
