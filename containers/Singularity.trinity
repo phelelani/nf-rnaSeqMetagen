@@ -33,7 +33,8 @@ ln -sf /usr/bin/python3.6 /usr/bin/python3
 ## Install SETUP TOOLS and PIP
 cd /opt \
     && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
-    && python3.6 get-pip.py
+    && python3.6 get-pip.py \
+    && pip3 install numpy
 
 ## Install Jellyfish
 cd /opt \

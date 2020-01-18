@@ -11,11 +11,6 @@ if (params.help) {
     println "\n${line}"
     println "#".multiply(48 - ("${ver}".size() / 2 )) + "  ${ver}   " + "#".multiply(48 - ("${ver}".size() / 2 ))
     println "${line}\n"
-    // log.info ''
-    // log.info "===================================="
-    // log.info "         nf-rnaSeqMetagen v0.1        "
-    // log.info "===================================="
-    // log.info ''
     // log.info 'USAGE: '
     // log.info 'nextflow run main.nf --data /path/to/data --out /path/to/output --db /path/to/kraken-db --taxonomy /path/to/taxonomy --genome /path/to/genome.fa --index /path/to/STARIndex --bind /path/to/bind1;/path/to/bind2'
     // log.info ''
@@ -54,7 +49,7 @@ if (params.mode in [ "prep.Containers", "prep.STARIndex", "prep.BowtieIndex", "p
     } else{
         data_dir = file(params.data, type: 'dir')
     }
-} else if (params.data == null && prarams.mode == "run.FilterClassify") {
+} else if (params.data == null && params.mode == "run.FilterClassify") {
     exit 1, "$data_error"
 } else{
     data_dir = file(params.data, type: 'dir')
@@ -70,8 +65,10 @@ if(params.out == null) {
 // USER PARAMETER INPUT: KRAKEN2 DB DIRECTORY
 if(params.db== null) {
     db = file("${PWD}/kraken2_db", type: 'dir')
+    taxonomy = file(db, type: 'dir')
 } else{
     db = file(params.db, type: 'dir')
+    taxonomy = file(db, type: 'dir')
 }
 
 // USER PARAMETER INPUT: GENOME FASTA FILE
@@ -137,27 +134,25 @@ ext           = "fastq,fastq.gz,fastq.bz2,fq,fq.gz,fq.bz2"
 // }
 
 
+//  ======================================================================================================
+//  RUN INFO
+//  ======================================================================================================
+options="nf-rnaSeqMetagen v0.2 - Input/Output and Parameters:"
+println "\n" + "=".multiply(100)
+println "#".multiply(48 - ("${options}".size() / 2 )) + "  ${options}  " + "#".multiply(48 - ("${options}".size() / 2 ))
+println "=".multiply(100)
+println "Input data              : $data_dir"
+println "Input data type         : $stranded"
+println "Output directory        : $out_dir"
+println "Kraken2 DB directory    : $db"
+println ' '.multiply(26) + "- ${filter_dir.baseName}"
+println ' '.multiply(26) + "- ${multiqc_dir.baseName}"
+println "Genome                  : $genome"
+println "Genome annotation       : $genes"
+println "Paths to bind           : $bind_dir"
+println "=".multiply(100)
+println " "
 
-//
-/*  ======================================================================================================
- *  RUN INFO
- *  ======================================================================================================
- */
-// log.info "===================================="
-// log.info "           nf-rnaSeqMetagen         "
-// log.info "===================================="
-// log.info "Input data          : ${data_path}"
-// log.info "Output path         : ${out_path}"
-// log.info "Input file extension  : $ext"
-// log.info "STAR readFile command : $read_file_cmd"
-// log.info "Kraken database     : ${db}"
-// log.info "Taxonomy database   : ${taxonomy}"
-// log.info "Genome              : ${genome}"
-// log.info "Genome Index (STAR) : ${index}"
-// log.info "Paths to bind       : ${bind}"
-// log.info "====================================\n"
-//
-//
 /*  ======================================================================================================
  *  PIPELINE START
  *  ======================================================================================================
@@ -169,6 +164,23 @@ ${line}
 Oooh no!! Looks like there's a serious issue in your input data! There are no FASTQ file in the directory:
 \t${data_dir}
 Please ensure that you have given me the correct directory for you FASTQ input reads using the \'--data\' option!
+${line}
+"""
+
+mode_error = """
+${line}
+Oooh no!! Looks like there's an serious issue in your command! 
+I do not recognise the \'--mode ${params.mode}\' option you have given me, or you have not given me any \'--mode\' option at all!
+The allowed options for \'--mode\' are:
+\tprep.Containers\t\t: For downloading Singularity containers used in this workflow.
+\tprep.STARIndex\t\t: For indexing your reference genome using STAR.
+\tprep.BowtieIndex\t: For indexing your reference genome using Bowtie2.
+\trun.ReadQC\t\t: For performing general QC on your reads using FastQC. 
+\trun.ReadTrimming\t: For trimming low quality bases and removing adapters from your reads using Trimmmomatic.
+\trun.ReadAlignment\t: For aligning your reads to your reference genome using STAR.
+\trun.ReadCounting\t: For counting features in your reads using HTSeq-count and featureCounts.
+\trun.MultiQC\t\t: For getting a summary of QC through the analysis using MultiQC.
+\nPlease use one of the above options with \'--mode\' to run the nf-rnaSeqCount workflow!
 ${line}
 """
 
@@ -207,7 +219,6 @@ switch (mode) {
         
         process run_DownloadContainers {
             label 'mini'
-            scratch '$HOME/tmp'
             tag { "Downloading: ${link}" }
             publishDir "$PWD/containers", mode: 'copy', overwrite: true
             
@@ -281,10 +292,7 @@ switch (mode) {
         
     case ['prep.KrakenDB']:
         process run_GenerateKrakenDB {
-            cpus 7
-            memory '200 GB'
-            time '48h'
-            scratch '$HOME/tmp'
+            label 'maxi'
             tag { "Generate Kraken DB" }
             publishDir "$db", mode: 'copy', overwrite: true
            
@@ -292,7 +300,7 @@ switch (mode) {
             file("*") into kraken_db
             
             """
-            kraken2-build --standard --threads 6 --db kraken2DB
+            kraken2-build --standard --threads ${task.cpus} --db .
             """
         }
         break
@@ -302,15 +310,12 @@ switch (mode) {
     case ['run.FilterClassify']:
         // 1.  ALIGN READS TO REFERENCE GENOME
         process run_STAR {
-            cpus 13
-            memory '50 GB'
-            time '24h'
-            scratch '$HOME/tmp'
+            label 'maxi'
             tag { sample }
             publishDir "$filter_dir/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}*.{out,tab}"
     
             input:
-            set sample, file(reads) from read_pair
+                set sample, file(reads) from read_pairs
     
             output:
             set sample, file("${sample}*.{out,tab}") into star_results
@@ -319,25 +324,25 @@ switch (mode) {
             """	
             /bin/hostname
             STAR --runMode alignReads \
-                --genomeDir ${index} ${read_file_cmd} \
-                --readFilesIn ${reads.get(0)} ${reads.get(1)} \
-                --runThreadN 12 \
+                --genomeDir ${index_dir} \
+                --readFilesCommand gunzip -c \
+                --readFilesIn ${reads.findAll().join(' ')} \
+                --runThreadN ${task.cpus} \
                 --outSAMtype BAM Unsorted \
                 --outReadsUnmapped Fastx \
                 --outFileNamePrefix ${sample}_
        
-            sed -i 's|\\s.[0-9]\$|\\/1|g' ${sample}_Unmapped.out.mate1 
-            sed -i 's|\\s.[0-9]\$|\\/2|g' ${sample}_Unmapped.out.mate2
-
+            sed -i 's| \\(.*\\)\$|\\/1|g' ${sample}_Unmapped.out.mate1 
+            sed -i 's| \\(.*\\)\$|\\/2|g' ${sample}_Unmapped.out.mate2
             """ 
         }
 
+        // sed -i 's|\\s.[0-9]\$|\\/1|g' ${sample}_Unmapped.out.mate1 
+        // sed -i 's|\\s.[0-9]\$|\\/2|g' ${sample}_Unmapped.out.mate2
+
         // 2. Run KRAKEN to classify the raw reads that aren't mapped to the reference genome.
         process run_KrakenClassifyReads {
-            cpus 13
-            memory '50 GB'
-            time '24h'
-            scratch '$HOME/tmp'
+            label 'maxi'
             tag { sample }
             publishDir "$filter_dir/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}_*.fastq"
 
@@ -352,8 +357,8 @@ switch (mode) {
             """	
             /bin/hostname
             kraken2 --db ${db} \
-                --paired ${reads.get(0)} ${reads.get(1)} \
-                --threads 12 \
+                --paired ${reads.findAll().join(' ')} \
+                --threads ${task.cpus} \
                 --classified-out ${sample}_classified#.fastq \
                 --unclassified-out ${sample}_unclassified#.fastq \
                 --output ${sample}_reads.krak
@@ -362,10 +367,8 @@ switch (mode) {
 
         // 3. Assemble the reads into longer contigs/sequences for classification.
         process run_TrinityAssemble {
-            cpus 13
+            label 'maxi'
             memory '150 GB'
-            time '48h'
-            scratch '$HOME/tmp'
             tag { sample }
             publishDir "$filter_dir/${sample}", mode: 'copy', overwrite: true
 
@@ -381,17 +384,14 @@ switch (mode) {
                --max_memory 150G \
                --left ${reads.get(0)} --right ${reads.get(1)} \
                --SS_lib_type RF \
-               --CPU 12 \
-               --output  trinity_${sample}
+               --CPU ${task.cpus} \
+               --output trinity_${sample}
             """
          }
 
         // 4. Run KRAKEN to classify the assembled FASTA sequences.
         process run_KrakenClassifyFasta {
-            cpus 13
-            memory '50 GB'
-            time '24h'
-            scratch '$HOME/tmp'
+            label 'maxi'
             tag { sample }
             publishDir "$filter_dir/${sample}", mode: 'copy', overwrite: true, pattern: "*.fasta"
 
@@ -406,7 +406,7 @@ switch (mode) {
             """	
             kraken2 --db ${db} \
                 ${fasta} \
-                --threads 12 \
+                --threads ${task.cpus} \
                 --classified-out ${sample}_classified.fasta \
                 --unclassified-out ${sample}_unclassified.fasta \
                 --output ${sample}_fasta.krak
@@ -420,10 +420,7 @@ switch (mode) {
 
         //5. Create that pretty KRONA report for all samples (reads and fasta)
         process run_KronaReport {
-            cpus 1
-            memory '1 GB'
-            time '6h'
-            scratch '$HOME/tmp'
+            label 'mini'
             tag { sample }
             publishDir "$filter_dir/${sample}", mode: 'copy', overwrite: true
 
@@ -453,10 +450,7 @@ switch (mode) {
 
         // 6. Get QC for STAR, HTSeqCounts and featureCounts
         process run_MultiQC {
-            cpus 1
-            memory '2 GB'
-            time '1h'
-            scratch '$HOME/tmp'
+            label 'mini'
             tag { "Get QC Information" }
             publishDir "$multiqc_dir", mode: 'copy', overwrite: true
 
@@ -477,10 +471,7 @@ switch (mode) {
 
         // 7b. Prepare data for creating the matrix for UpSet: json file, taxonomy file, and sample taxids 
         process run_PrepareMatrixData {
-            cpus 1
-            memory '1 GB'
-            time '1h'
-            scratch '$HOME/tmp'
+            label 'mini'
             tag { "Prepare Matrix Data" }
             publishDir "$filter_dir", mode: 'copy', overwrite: true
             echo 'true'
@@ -502,10 +493,7 @@ switch (mode) {
 
         // 7 Create the UpSet matrix
         process run_CreateMatrix {
-            cpus 1
-            memory '1 GB'
-            time '1h'
-            scratch '$HOME/tmp'
+            label 'mini'
             tag { "Create UpSet Matrix" }
             publishDir "$multiqc_dir/upset/data/nf-rnaSeqMetagen", mode: 'copy', overwrite: true
             echo 'true'
@@ -531,6 +519,7 @@ summary="nf-rnaSeqMetagen v0.2 - Execution Summary:"
 workflow.onComplete {
     println "\n${line}"
     println "#".multiply(48 - ("${summary}".size() / 2 )) + "  ${summary}  " + "#".multiply(48 - ("${summary}".size() / 2 ))    
+    println "${line}\n"
     println "Execution command   : ${workflow.commandLine}"
     println "Execution name      : ${workflow.runName}"
     println "Workflow start      : ${workflow.start}"
