@@ -67,19 +67,19 @@ cd /opt \
 
 ## Install Salmon
 cd /opt \
-    && wget -c https://github.com/COMBINE-lab/salmon/releases/download/v0.9.1/Salmon-0.9.1_linux_x86_64.tar.gz \
-    && tar -vxf Salmon-0.9.1_linux_x86_64.tar.gz \
-    && rm /opt/Salmon-0.9.1_linux_x86_64.tar.gz
+    && wget -c https://github.com/COMBINE-lab/salmon/releases/download/v1.1.0/salmon-1.1.0_linux_x86_64.tar.gz \
+    && tar -vxf salmon-1.1.0_linux_x86_64.tar.gz \
+    && rm /opt/salmon-1.1.0_linux_x86_64.tar.gz
 
 ## Install Trinity
 cd /opt \
-    && wget -c https://github.com/trinityrnaseq/trinityrnaseq/archive/v2.9.0.tar.gz \
-    && tar -vxf v2.9.0.tar.gz \
-    && cd trinityrnaseq-2.9.0 \
+    && wget -c https://github.com/trinityrnaseq/trinityrnaseq/releases/download/v2.9.0/trinityrnaseq-v2.9.0.FULL.tar.gz \
+    && tar -vxf trinityrnaseq-v2.9.0.FULL.tar.gz \
+    && cd trinityrnaseq-v2.9.0 \
     && make \
     && make plugins \
     && make install \
-    && rm /opt/v2.9.0.tar.gz
+    && rm /opt/trinityrnaseq-v2.9.0.FULL.tar.gz
     
 %environment
 ## Add paths to  environment
@@ -87,7 +87,7 @@ export PATH=/opt/jellyfish-2.2.9/bin:$PATH
 export LD_LIBRARY_PATH=/opt/jellyfish-2.2.9/lib
 export PATH=/opt/samtools-1.7/bin:$PATH
 export PATH=/opt/bowtie2-2.3.4.1:$PATH
-export PATH=/opt/Salmon-latest_linux_x86_64/bin:$PATH
-export PATH=/opt/trinityrnaseq-2.9.0:$PATH
+export PATH=/opt/salmon-latest_linux_x86_64/bin:$PATH
+export PATH=/usr/local/bin/trinityrnaseq-v2.9.0:$PATH
 export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 export PYTHONPATH=/usr/local/lib/python3.6/dist-packages
