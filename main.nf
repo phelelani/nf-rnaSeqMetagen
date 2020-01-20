@@ -64,11 +64,11 @@ if(params.out == null) {
 
 // USER PARAMETER INPUT: KRAKEN2 DB DIRECTORY
 if(params.db== null) {
-    db = file("${PWD}/kraken2_db", type: 'dir')
-    taxonomy = file(db, type: 'dir')
+    db = file("${PWD}/kraken2db", type: 'dir')
+    taxonomy = file("$db/taxonomy", type: 'dir')
 } else{
     db = file(params.db, type: 'dir')
-    taxonomy = file(db, type: 'dir')
+    taxonomy = file("$db/taxonomy", type: 'dir')
 }
 
 // USER PARAMETER INPUT: GENOME FASTA FILE
@@ -336,9 +336,6 @@ switch (mode) {
             sed -i 's| \\(.*\\)\$|\\/2|g' ${sample}_Unmapped.out.mate2
             """ 
         }
-
-        // sed -i 's|\\s.[0-9]\$|\\/1|g' ${sample}_Unmapped.out.mate1 
-        // sed -i 's|\\s.[0-9]\$|\\/2|g' ${sample}_Unmapped.out.mate2
 
         // 2. Run KRAKEN to classify the raw reads that aren't mapped to the reference genome.
         process run_KrakenClassifyReads {
