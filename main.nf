@@ -111,8 +111,8 @@ bind_dir      = [ params.data, out_dir, db, new File("${params.genome}").getPare
 
 // OUTPUT DIRECTORIES
 out_dir.mkdir()
-filter_dir    = file("${out_dir}/filtering", type: 'dir')
-multiqc_dir   = file("${out_dir}/report_MultiQC", type: 'dir')
+// filter_dir    = file("${out_dir}/filtering", type: 'dir')
+// multiqc_dir   = file("${out_dir}/report_MultiQC", type: 'dir')
 ext           = "fastq,fastq.gz,fastq.bz2,fq,fq.gz,fq.bz2"
 
 // case ['fastq','fq']:
@@ -145,8 +145,8 @@ println "Input data              : $data_dir"
 println "Input data type         : $stranded"
 println "Output directory        : $out_dir"
 println "Kraken2 DB directory    : $db"
-println ' '.multiply(26) + "- ${filter_dir.baseName}"
-println ' '.multiply(26) + "- ${multiqc_dir.baseName}"
+// println ' '.multiply(26) + "- ${filter_dir.baseName}"
+// println ' '.multiply(26) + "- ${multiqc_dir.baseName}"
 println "Genome                  : $genome"
 println "Genome annotation       : $genes"
 println "Paths to bind           : $bind_dir"
@@ -312,14 +312,14 @@ switch (mode) {
         process run_STAR {
             label 'maxi'
             tag { sample }
-            publishDir "$filter_dir/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}*.{out,tab}"
+            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}*.{out,tab}"
     
             input:
-                set sample, file(reads) from read_pairs
+            set sample, file(reads) from read_pairs
     
             output:
             set sample, file("${sample}*.{out,tab}") into star_results
-            set sample, file("${sample}_Unmapped*") into unmapped_kraken, unmapped_trinity
+            set sample, file("${sample}_Unmapped*") into unmapped_reads
     
             """	
             /bin/hostname
@@ -331,17 +331,31 @@ switch (mode) {
                 --outSAMtype BAM Unsorted \
                 --outReadsUnmapped Fastx \
                 --outFileNamePrefix ${sample}_
-       
-            sed -i 's| \\(.*\\)\$|\\/1|g' ${sample}_Unmapped.out.mate1 
-            sed -i 's| \\(.*\\)\$|\\/2|g' ${sample}_Unmapped.out.mate2
             """ 
         }
 
+        process run_FixSeqNames {
+            label 'mini'
+            tag { sample }
+            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
+
+            input:
+            set sample, file(unmapped) from unmapped_reads
+            
+            output:
+            set sample, file("${sample}_unmapped*") into unmapped_kraken, unmapped_trinity
+
+            """
+            sed 's| \\(.*\\)\$|\\/1|g' ${unmapped.find { it =~ 'mate1' } } > ${sample}_unmapped_R1.fastq
+            sed 's| \\(.*\\)\$|\\/2|g' ${unmapped.find { it =~ 'mate2' } } > ${sample}_unmapped_R2.fastq
+            """
+        }
+        
         // 2. Run KRAKEN to classify the raw reads that aren't mapped to the reference genome.
         process run_KrakenClassifyReads {
             label 'maxi'
             tag { sample }
-            publishDir "$filter_dir/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}_*.fastq"
+            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
 
             input:
             set sample, file(reads) from unmapped_kraken
@@ -367,7 +381,7 @@ switch (mode) {
             label 'maxi'
             memory '150 GB'
             tag { sample }
-            publishDir "$filter_dir/${sample}", mode: 'copy', overwrite: true
+            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
 
             input:
             set sample, file(reads) from unmapped_trinity
@@ -379,7 +393,8 @@ switch (mode) {
             /bin/hostname
             Trinity --seqType fq \
                --max_memory 150G \
-               --left ${reads.get(0)} --right ${reads.get(1)} \
+               --left ${reads.find { it =~ 'R1' } } \
+               --right ${reads.find { it =~ 'R2' } } \
                --SS_lib_type RF \
                --CPU ${task.cpus} \
                --output trinity_${sample}
@@ -390,7 +405,7 @@ switch (mode) {
         process run_KrakenClassifyFasta {
             label 'maxi'
             tag { sample }
-            publishDir "$filter_dir/${sample}", mode: 'copy', overwrite: true, pattern: "*.fasta"
+            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
 
             input:
             set sample, file(fasta) from trinity_assembled_reads
@@ -419,7 +434,7 @@ switch (mode) {
         process run_KronaReport {
             label 'mini'
             tag { sample }
-            publishDir "$filter_dir/${sample}", mode: 'copy', overwrite: true
+            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
 
             input:
             set sample, file(kraken) from all_kraken_reports
@@ -440,7 +455,6 @@ switch (mode) {
             """
         }
 
-        //-tax ${taxonomy} \
         // 6a. Collect files for STAR QC
         star_results.collectFile () { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
         .set { qc_star }
@@ -449,13 +463,13 @@ switch (mode) {
         process run_MultiQC {
             label 'mini'
             tag { "Get QC Information" }
-            publishDir "$multiqc_dir", mode: 'copy', overwrite: true
+            publishDir "$out_dir/report_multiqc", mode: 'copy', overwrite: true
 
             input:
-                file(star) from qc_star
+            file(star) from qc_star
 
             output:
-                file('*') into multiQC
+            file('*') into multiQC
 
             """
             multiqc `< ${star}` --force
@@ -470,8 +484,7 @@ switch (mode) {
         process run_PrepareMatrixData {
             label 'mini'
             tag { "Prepare Matrix Data" }
-            publishDir "$filter_dir", mode: 'copy', overwrite: true
-            echo 'true'
+            publishDir "$out_dir", mode: 'copy', overwrite: true
 
             input:
             file(list) from krona_report_list
@@ -481,7 +494,7 @@ switch (mode) {
             file("upset/data/nf-rnaSeqMetagen/*") into final_list
 
             shell:
-            database = "${db}"
+            tax_names = "${taxonomy}"
             file_list = "${list}"
             json_file = "nf-rnaSeqMetagen.json"
             names_file = "names_table.dmp"
@@ -492,8 +505,7 @@ switch (mode) {
         process run_CreateMatrix {
             label 'mini'
             tag { "Create UpSet Matrix" }
-            publishDir "$multiqc_dir/upset/data/nf-rnaSeqMetagen", mode: 'copy', overwrite: true
-            echo 'true'
+            publishDir "$out_dir/upset/data/nf-rnaSeqMetagen", mode: 'copy', overwrite: true
 
             input:
             file(list) from final_list
