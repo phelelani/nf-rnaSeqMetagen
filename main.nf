@@ -312,7 +312,7 @@ switch (mode) {
         process run_STAR {
             label 'maxi'
             tag { sample }
-            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}*.{out,tab}"
+            // publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}*.{out,tab}"
     
             input:
             set sample, file(reads) from read_pairs
@@ -337,7 +337,7 @@ switch (mode) {
         process run_FixSeqNames {
             label 'mini'
             tag { sample }
-            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
+            // publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
 
             input:
             set sample, file(unmapped) from unmapped_reads
@@ -355,7 +355,7 @@ switch (mode) {
         process run_KrakenClassifyReads {
             label 'maxi'
             tag { sample }
-            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
+            // publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
 
             input:
             set sample, file(reads) from unmapped_kraken
@@ -405,7 +405,7 @@ switch (mode) {
         process run_KrakenClassifyFasta {
             label 'maxi'
             tag { sample }
-            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
+            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true, pattern: "*{_fasta.krak,_classified.fasta}"
 
             input:
             set sample, file(fasta) from trinity_assembled_reads
@@ -425,7 +425,7 @@ switch (mode) {
             """ 
         }
 
-        // For each sample, create a list with [ SAMPLE_NAME, READ, FASTA ] by merging the classified outputs (reads and fasta) from KRAKEN 
+        // For each sample, create a list with [ SAMPLE_NAME, READ, FASTA ] by merging the classified outputs (reads and fasta) from KRAKEN
         kraken_reads_report.join(kraken_fasta_report)
         .map { it -> [ it[0], [ it[1], it[2] ] ] }
         .set { all_kraken_reports }
@@ -440,12 +440,13 @@ switch (mode) {
             set sample, file(kraken) from all_kraken_reports
 
             output:
-            set sample, file("*") into html
-            set sample, file("*.kron") into krona_report
+            set sample, file("*.html") into html
+            set sample, file("*reads.kron") into reads_krona
+            set sample, file("*fasta.kron") into fasta_krona, fasta_krona_seqs
 
             """
             function createChart {
-                cut -f 2,3 \$1 > \$(sed 's/.krak/.kron/' <<< "\$1")
+                awk '\$1=="C" { print \$2"\t"\$3 }' \$1 > \$(sed 's/.krak/.kron/' <<< "\$1")
                 ktImportTaxonomy \$(sed 's/.krak/.kron/' <<< "\$1") \
                     -tax \$2 \
                     -o \$(sed 's/.krak/.html/' <<< "\$1")
@@ -455,6 +456,29 @@ switch (mode) {
             """
         }
 
+        fasta_krona_seqs.join(kraken_classified_fasta)
+        .map { it -> [ it[0], [ it[1], it[2] ] ] }
+        .set { krona_fasta_pair }
+        
+        process run_CollectTaxSeqs {
+            label 'mini'
+            tag { sample }
+            publishDir "$out_dir/${sample}/taxon_sequences", mode: 'copy', overwrite: true
+
+            input: 
+            set sample, file(test) from krona_fasta_pair
+            
+            output:
+            set sample, file("taxid_*.fasta") into taxon_sequences
+            
+            """
+            for id in \$(awk '{ print \$2 }' ${test.get(0)} | sort -gu)
+            do
+                grep -A1 --no-group-separator "kraken:taxid|\$id\$" ${test.get(1)} | sed 's/path=\\[\\(.*\\)\\] //' > "taxid_"\$id".fasta"
+            done
+            """
+        }
+        
         // 6a. Collect files for STAR QC
         star_results.collectFile () { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
         .set { qc_star }
@@ -477,21 +501,35 @@ switch (mode) {
         }
 
         // 7a. Collect all the krona file locations and put them in a text file
-        krona_report.collectFile () { item -> [ 'fasta_krona_report.txt', "${item.get(1).find { it =~ 'fasta.kron' } }" + '\n' ] }
-        .set { krona_report_list } 
+        fasta_krona.collectFile () { item -> [ 'fasta_krona_files.txt', "${item.get(1)}" + '\n' ] }
+        .set { fasta_krona_list } 
 
+        // fasta_krona_report.collectFile () { item -> [ 'fasta_krona_report.txt', "${item.get(1).find { it =~ 'fasta.kron' } }" + '\n' ] }
+
+        process run_CopyUpsetDir {
+            label 'mini'
+            tag { "Copy UpSet Tool" }
+            publishDir "$out_dir/upset", mode: 'copy', overwrite: true
+            
+            output:
+            file("*") into upset_dir
+
+            """
+            /bin/hostname
+            rsync -avhP /opt/upset/* .
+            """
+        }
+        
         // 7b. Prepare data for creating the matrix for UpSet: json file, taxonomy file, and sample taxids 
         process run_PrepareMatrixData {
             label 'mini'
             tag { "Prepare Matrix Data" }
-            publishDir "$out_dir", mode: 'copy', overwrite: true
 
             input:
-            file(list) from krona_report_list
+            file(list) from fasta_krona_list
 
             output:
-            file("*") into whole_list
-            file("upset/data/nf-rnaSeqMetagen/*") into final_list
+            file("*.{dmp,taxon,json}") into matrix_files
 
             shell:
             tax_names = "${taxonomy}"
@@ -508,10 +546,10 @@ switch (mode) {
             publishDir "$out_dir/upset/data/nf-rnaSeqMetagen", mode: 'copy', overwrite: true
 
             input:
-            file(list) from final_list
+            file(list) from matrix_files
 
             output:
-            file("*") into the_matrix
+            set val("upset_files"), file(list), file("*") into the_matrix
 
             shell:
             template 'create_matrix.R'
