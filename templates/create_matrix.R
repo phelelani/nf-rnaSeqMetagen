@@ -14,7 +14,11 @@ for(i in taxon_files){
 }
 
 ## Get the list of unique taxons for all datasets
-taxons <- unique(get(the_list))
+all_taxons <- vector()
+for (sample in 1:length(the_list)) {
+    all_taxons <- c(all_taxons, get(the_list[sample]))
+    }
+taxons <- unique(sort(all_taxons))
 
 ## Initiate a matrix to populate - taxons on rows and samples on columns
 the_table <- as.data.frame(taxons)
@@ -29,11 +33,9 @@ rownames(the_table) <- the_table$taxons
 the_table <- the_table[,-1]
 the_table[is.na(the_table)] <- 0
 
-## Remove 0 (unknown), 1 (root), 9606 (homo sapiens), 374840 (phiX).
-##the_table <- the_table[!(rownames(the_table) %in% c(0,1,9606,374840)),]
-
 ## ## Remove taxons that are found throughout the samples - not useful
-the_table <- the_table[rowSums(the_table) != length(colnames(the_table)),]
+the_table <- the_table[!(rownames(the_table) == 1),]
+the_table <- the_table[!rowSums(the_table) %in% c(0,1,2,3,length(colnames(the_table))),]
 
 ## Order table by column names
 the_table <- the_table[,order(names(the_table))]
