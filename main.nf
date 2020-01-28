@@ -11,21 +11,41 @@ if (params.help) {
     println "\n${line}"
     println "#".multiply(48 - ("${ver}".size() / 2 )) + "  ${ver}   " + "#".multiply(48 - ("${ver}".size() / 2 ))
     println "${line}\n"
-    // log.info 'USAGE: '
-    // log.info 'nextflow run main.nf --data /path/to/data --out /path/to/output --db /path/to/kraken-db --taxonomy /path/to/taxonomy --genome /path/to/genome.fa --index /path/to/STARIndex --bind /path/to/bind1;/path/to/bind2'
-    // log.info ''
-    // log.info 'HELP: '
-    // log.info 'nextflow run main.nf --help'
-    // log.info ''
-    // log.info 'MANDATORY ARGUEMENTS:'
-    // log.info '    --data     FOLDER    Path to where the input data is located (fastq | fq)'
-    // log.info '    --out      FOLDER    Path to where the output should be directed (will be created if it does not exist).'
-    // log.info '    --db       FOLDER    Path to where the Kraken database is installed'
-    // log.info '    --taxonomy FOLDER    Path to where the taxonomy database is installed'
-    // log.info '    --genome   FILE      The whole genome sequence (fasta | fa | fna)'
-    // log.info '    --index    FOLDER    Path to where the STAR index files are locaded'
-    // log.info '    --bind     FOLDER(S) Paths to be passed onto the singularity image'
-    // log.info ''
+    println "USAGE:"
+    println "nextflow run nf-rnaSeqMetagen -profile \"slurm\" --data \"/path/to/data\" --genome \"/path/to/genome.fa\" --genes \"/path/to/genes.gtf\"\n" 
+    println "HELP:"
+    println "nextflow run nf-rnaSeqMetagen --help\n"
+    println "MANDATORY ARGUEMENTS:"
+    println "-profile     STRING    Executor to be used. Available options:"
+    println "\t\t\t\t\"standard\"          : Local execution (no job scheduler)."
+    println "\t\t\t\t\"slurm\"             : SLURM scheduler."
+    println "--data       FOLDER    Path to where the input data (FASTQ files) is located. Supported FASTQ files:"
+    println "\t\t\t\t[ fastq | fastq.gz | fastq.bz2 | fq | fq.gz | fq.bz2 ]"
+    println "--genome     FILE      The whole genome FASTA sequence. Supported FASTA files:"
+    println "\t\t\t\t[ fasta | fa | fna ]"
+    println "--genes      FILE      The genome annotation GFT file. Supported GTF file:"
+    println "\t\t\t\t[ gtf ]"
+    println "--db         FOLDER    Path to where the Kraken2 database will be saved (or where it is located if already created)."
+    println "                       Default: \$PWD/kraken2db"
+    println "--mode       STRING    To specify which step of the workflow you are running (see https://github.com/phelelani/nf-rnaSeqCount)."
+    println "                       Availeble options:"
+    println "\t\t\t\t\"prep.Containers\"   : For downloading Singularity containers used in this workflow."
+    println "\t\t\t\t\"prep.STARIndex\"    : For indexing your reference genome using STAR."
+    println "\t\t\t\t\"prep.BowtieIndex\"  : For indexing your reference genome using Bowtie2."
+    println "\t\t\t\t\"prep.KrakenDB\"     : For building the Kraken2 database."
+    println "\t\t\t\t\"run.FilterClassify\": For performing metagenomics analysis, i.e., filtering and classification.\n"
+    println "OPTIONAL ARGUEMENTS:"
+    println "--help                 To show this menu."
+    println "--out        FOLDER    Path to where the output should be directed."
+    println "                       Default: \$PWD/results_nf-rnaSeqCount"
+    println "--pairedEnd            If working with paired-end FASTQ files (default)."
+    println "--singleEnd            If working with single-end FASTQ files."
+    println "--max_memory STRING    Maximum memory you have access to."
+    println "                       Default: \"200.GB\""
+    println "--max_cpus   STRING    Maximum CPUs you have access to."
+    println "                       Default: \"24\""
+    println "--max_time   STRING    Maximum time you have access to."
+    println "                       Default: \"24.h\""
     println "${line}\n"
     exit 1
 }
@@ -41,18 +61,61 @@ max_time   = 24.h
  *  ======================================================================================================
  */
 
+// MAIN USER INPUT ERRORS
+data_error = """
+${line}
+Oooh no!! Looks like there's a serious issue in your command! 
+I do not recognise the \'--data ${params.data}\' option you have given me, or you have not given me any \'--data\' option at all!
+Please provide a valid directory with you input FASTQ reads with the \'--data\' option to run the nf-rnaSeqMetagen workflow! 
+${line}
+"""
+
+genome_error = """
+${line}
+Oooh no!! Looks like there's a serious issue in your command! 
+I do not recognise the \'--genome ${params.genome}\' option you have given me, or you have not given me any \'--genome\' option at all!
+Please provide a valid FASTA file (.fasta or .fa) for your reference genome with the \'--genome\' option to run the nf-rnaSeqMetagen workflow! 
+${line}
+"""
+
+genes_error = """
+${line}
+Oooh no!! Looks like there's a serious issue in your command! 
+I do not recognise the \'--genes ${params.genes}\' option you have given me, or you have not given me any \'--genes\' option at all!
+Please provide a valid GTF annotation file (.gtf) for your reference genome with the \'--genes\' option to run the nf-rnaSeqMetagen workflow! 
+${line}
+"""
+
+mode_error = """
+${line}
+Oooh no!! Looks like there's an serious issue in your command! 
+I do not recognise the \'--mode ${params.mode}\' option you have given me, or you have not given me any \'--mode\' option at all!
+The allowed options for \'--mode\' are:
+\tprep.Containers\t\t: For downloading Singularity containers used in this workflow.
+\tprep.STARIndex\t\t: For indexing your reference genome using STAR.
+\tprep.BowtieIndex\t: For indexing your reference genome using Bowtie2.
+\tprep.KrakenDB\t\t: For building the Kraken2 database.
+\trun.FilterClassify\t: For performing metagenomics analysis, i.e., filtering and classification.
+\nPlease use one of the above options with \'--mode\' to run the nf-rnaSeqMetagen workflow!
+${line}
+"""
+
 // USER PARAMETER INPUT: DATA DIRECTORY
 // ---- THESE DO NOT REQUIRE DATA!!
 if (params.mode in [ "prep.Containers", "prep.STARIndex", "prep.BowtieIndex", "prep.KrakenDB" ]) {
     if (params.data == null) {
-        data_dir = "YOU HAVEN'T SPECIFIED THE DITA DIRECTORY YET! PLEASE SPECIFY BEFORE RUNNING THE WORKFLOW"
+        data_dir = "PLEASE NOTE THAT YOU HAVEN'T SPECIFIED THE DATA DIRECTORY YET! PLEASE SPECIFY WHEN RUNNING THE WORKFLOW"
     } else{
         data_dir = file(params.data, type: 'dir')
     }
-} else if (params.data == null && params.mode == "run.FilterClassify") {
-    exit 1, "$data_error"
+} else if (params.mode == "run.FilterClassify") {
+    if (params.data == null) { 
+        exit 1, "$data_error"
+    } else{
+        data_dir = file(params.data, type: 'dir')
+    }
 } else{
-    data_dir = file(params.data, type: 'dir')
+    exit 1, "$mode_error"
 }
 
 // USER PARAMETER INPUT: OUTPUT DIRECTORY
@@ -63,7 +126,7 @@ if(params.out == null) {
 }
 
 // USER PARAMETER INPUT: KRAKEN2 DB DIRECTORY
-if(params.db== null) {
+if(params.db == null) {
     db = file("${PWD}/kraken2db", type: 'dir')
     taxonomy = file("$db/taxonomy", type: 'dir')
 } else{
@@ -111,28 +174,7 @@ bind_dir      = [ params.data, out_dir, db, new File("${params.genome}").getPare
 
 // OUTPUT DIRECTORIES
 out_dir.mkdir()
-// filter_dir    = file("${out_dir}/filtering", type: 'dir')
-// multiqc_dir   = file("${out_dir}/report_MultiQC", type: 'dir')
 ext           = "fastq,fastq.gz,fastq.bz2,fq,fq.gz,fq.bz2"
-
-// case ['fastq','fq']:
-//     ext = params.filetype
-//     read_file_cmd = ''
-//     break
-// case ['fastq.gz','fq.gz']:
-//     ext = params.filetype
-//     read_file_cmd = '--readFilesCommand gunzip -c'
-//     break
-// case ['fastq.bz2','fq.bz2']:
-//     ext = params.filetype
-//     read_file_cmd = '--readFilesCommand bunzip2 -c'
-//     break
-// case null:
-//     ext = 'fastq.gz'
-//     read_file_cmd = '--readFilesCommand gunzip -c'
-//     break
-// }
-
 
 //  ======================================================================================================
 //  RUN INFO
@@ -144,11 +186,9 @@ println "=".multiply(100)
 println "Input data              : $data_dir"
 println "Input data type         : $stranded"
 println "Output directory        : $out_dir"
-println "Kraken2 DB directory    : $db"
-// println ' '.multiply(26) + "- ${filter_dir.baseName}"
-// println ' '.multiply(26) + "- ${multiqc_dir.baseName}"
 println "Genome                  : $genome"
 println "Genome annotation       : $genes"
+println "Kraken2 DB directory    : $db"
 println "Paths to bind           : $bind_dir"
 println "=".multiply(100)
 println " "
@@ -167,25 +207,8 @@ Please ensure that you have given me the correct directory for you FASTQ input r
 ${line}
 """
 
-mode_error = """
-${line}
-Oooh no!! Looks like there's an serious issue in your command! 
-I do not recognise the \'--mode ${params.mode}\' option you have given me, or you have not given me any \'--mode\' option at all!
-The allowed options for \'--mode\' are:
-\tprep.Containers\t\t: For downloading Singularity containers used in this workflow.
-\tprep.STARIndex\t\t: For indexing your reference genome using STAR.
-\tprep.BowtieIndex\t: For indexing your reference genome using Bowtie2.
-\trun.ReadQC\t\t: For performing general QC on your reads using FastQC. 
-\trun.ReadTrimming\t: For trimming low quality bases and removing adapters from your reads using Trimmmomatic.
-\trun.ReadAlignment\t: For aligning your reads to your reference genome using STAR.
-\trun.ReadCounting\t: For counting features in your reads using HTSeq-count and featureCounts.
-\trun.MultiQC\t\t: For getting a summary of QC through the analysis using MultiQC.
-\nPlease use one of the above options with \'--mode\' to run the nf-rnaSeqCount workflow!
-${line}
-"""
-
 // GET INPUT DATA DEPENDING ON USER "MODE"
-if(mode in ["prep.Containers", "prep.STARIndex", "prep.BowtieIndex", "prep.KrakenDB"]) {
+if (mode in ["prep.Containers", "prep.STARIndex", "prep.BowtieIndex", "prep.KrakenDB"]) {
     // OPTIONS FOR PREPARING DATA
     switch (mode) {
         case ["prep.Containers"]:
@@ -198,7 +221,7 @@ if(mode in ["prep.Containers", "prep.STARIndex", "prep.BowtieIndex", "prep.Krake
             
             break
     }
-} else if(mode == "run.FilterClassify") {
+} else if (mode == "run.FilterClassify") {
     // OPTIONS FOR PERFORMING THE ANALYSES
     if(stranded == "paired-end") {
         read_pairs = Channel.fromFilePairs("${data_dir}/*{R,read}[1,2]*.{${ext}}", type: 'file')
@@ -320,9 +343,8 @@ switch (mode) {
             output:
             set sample, file("${sample}*.{out,tab}") into star_results
             set sample, file("${sample}_Unmapped*") into unmapped_reads
-    
-            """	
-            /bin/hostname
+
+            """
             STAR --runMode alignReads \
                 --genomeDir ${index_dir} \
                 --readFilesCommand gunzip -c \
@@ -331,8 +353,21 @@ switch (mode) {
                 --outSAMtype BAM Unsorted \
                 --outReadsUnmapped Fastx \
                 --outFileNamePrefix ${sample}_
-            """ 
+            """
         }
+
+
+            // name="${reads.get(0)}"
+            // if [[ "\$name" =~ ".fastq.gz" || "\$name" =~ ".fq.gz" ]]
+            // then
+            //     read_file_cmd = '--readFilesCommand gunzip -c'
+            // elif [[ "\$name" =~ ".fastq.bz2" || "\$name" =~ ".fq.bz2" ]]
+            // then 
+            //     read_file_cmd = '--readFilesCommand bunzip2 -c'
+            // else
+            //     read_file_cmd = ""
+            // fi
+
 
         process run_FixSeqNames {
             label 'mini'
