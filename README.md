@@ -168,8 +168,6 @@ To perform filtering of host reads and classification of exogeneous reads, use t
 nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c myparams.config
 ```
 
-CONGRATULATIONS for getting this far!! :) You can now explore the results and use the read counts to perform differential expression analysis!
-
 ---
 
 ## 3. Explore `nf-rnaSeqMetagen` results

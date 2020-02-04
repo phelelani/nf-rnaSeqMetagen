@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 println "clear".execute().text
-//  DO NOT EDIT FROM HERE!! - Unless you brave like King Shaka of course!
+
 /*  ======================================================================================================
  *  HELP MENU
  *  ======================================================================================================
@@ -19,6 +19,7 @@ if (params.help) {
     println "-profile     STRING    Executor to be used. Available options:"
     println "\t\t\t\t\"standard\"          : Local execution (no job scheduler)."
     println "\t\t\t\t\"slurm\"             : SLURM scheduler."
+    println "--mode       STRING    To specify which step of the workflow you are running (see https://github.com/phelelani/nf-rnaSeqMetagen)."
     println "--data       FOLDER    Path to where the input data (FASTQ files) is located. Supported FASTQ files:"
     println "\t\t\t\t[ fastq | fastq.gz | fastq.bz2 | fq | fq.gz | fq.bz2 ]"
     println "--genome     FILE      The whole genome FASTA sequence. Supported FASTA files:"
@@ -27,7 +28,6 @@ if (params.help) {
     println "\t\t\t\t[ gtf ]"
     println "--db         FOLDER    Path to where the Kraken2 database will be saved (or where it is located if already created)."
     println "                       Default: \$PWD/kraken2db"
-    println "--mode       STRING    To specify which step of the workflow you are running (see https://github.com/phelelani/nf-rnaSeqCount)."
     println "                       Availeble options:"
     println "\t\t\t\t\"prep.Containers\"   : For downloading Singularity containers used in this workflow."
     println "\t\t\t\t\"prep.STARIndex\"    : For indexing your reference genome using STAR."
@@ -49,19 +49,27 @@ if (params.help) {
     println "${line}\n"
     exit 1
 }
-pairedEnd  = null
-singleEnd  = null
-max_memory = 200.GB
-max_cpus   = 24
-max_time   = 24.h
-//
-//
+
 /*  ======================================================================================================
  *  CHECK ALL USER INPUTS
  *  ======================================================================================================
  */
 
 // MAIN USER INPUT ERRORS
+mode_error = """
+${line}
+Oooh no!! Looks like there's an serious issue in your command! 
+I do not recognise the \'--mode ${params.mode}\' option you have given me, or you have not given me any \'--mode\' option at all!
+The allowed options for \'--mode\' are:
+\tprep.Containers\t\t: For downloading Singularity containers used in this workflow.
+\tprep.STARIndex\t\t: For indexing your reference genome using STAR.
+\tprep.BowtieIndex\t: For indexing your reference genome using Bowtie2.
+\tprep.KrakenDB\t\t: For building the Kraken2 database.
+\trun.FilterClassify\t: For performing metagenomics analysis, i.e., filtering and classification.
+\nPlease use one of the above options with \'--mode\' to run the nf-rnaSeqMetagen workflow!
+${line}
+"""
+
 data_error = """
 ${line}
 Oooh no!! Looks like there's a serious issue in your command! 
@@ -86,74 +94,66 @@ Please provide a valid GTF annotation file (.gtf) for your reference genome with
 ${line}
 """
 
-mode_error = """
+db_error = """
 ${line}
-Oooh no!! Looks like there's an serious issue in your command! 
-I do not recognise the \'--mode ${params.mode}\' option you have given me, or you have not given me any \'--mode\' option at all!
-The allowed options for \'--mode\' are:
-\tprep.Containers\t\t: For downloading Singularity containers used in this workflow.
-\tprep.STARIndex\t\t: For indexing your reference genome using STAR.
-\tprep.BowtieIndex\t: For indexing your reference genome using Bowtie2.
-\tprep.KrakenDB\t\t: For building the Kraken2 database.
-\trun.FilterClassify\t: For performing metagenomics analysis, i.e., filtering and classification.
-\nPlease use one of the above options with \'--mode\' to run the nf-rnaSeqMetagen workflow!
+SOMETHING HERE!!!
 ${line}
 """
 
+// EMPTY LIST FOR COLLECTING ALL THE PATHS TO BIND TO SINGULARITY IMAGE
+bind_dirs = []
+
 // USER PARAMETER INPUT: DATA DIRECTORY
-// ---- THESE DO NOT REQUIRE DATA!!
-if (params.mode in [ "prep.Containers", "prep.STARIndex", "prep.BowtieIndex", "prep.KrakenDB" ]) {
-    if (params.data == null) {
-        data_dir = "PLEASE NOTE THAT YOU HAVEN'T SPECIFIED THE DATA DIRECTORY YET! PLEASE SPECIFY WHEN RUNNING THE WORKFLOW"
-    } else{
+switch (params.data) {
+    case [null]:
+        data_dir = "NOT SPECIFIED!"
+        break
+    default:
         data_dir = file(params.data, type: 'dir')
-    }
-} else if (params.mode == "run.FilterClassify") {
-    if (params.data == null) { 
-        exit 1, "$data_error"
-    } else{
-        data_dir = file(params.data, type: 'dir')
-    }
-} else{
-    exit 1, "$mode_error"
-}
-
-// USER PARAMETER INPUT: OUTPUT DIRECTORY
-if(params.out == null) {
-    out_dir = file("${PWD}/results_nf-rnaSeqMetagen", type: 'dir')
-} else{
-    out_dir = file(params.out, type: 'dir')
-}
-
-// USER PARAMETER INPUT: KRAKEN2 DB DIRECTORY
-if(params.db == null) {
-    db = file("${PWD}/kraken2db", type: 'dir')
-    taxonomy = file("$db/taxonomy", type: 'dir')
-} else{
-    db = file(params.db, type: 'dir')
-    taxonomy = file("$db/taxonomy", type: 'dir')
+        bind_dirs.add(data_dir)
 }
 
 // USER PARAMETER INPUT: GENOME FASTA FILE
-if(params.genome == null) {
-    exit 1, "$genome_error"
-} else{
-    genome = file(params.genome, type: 'file')
-    index_dir = genome.getParent()
+switch (params.genome) {
+    case [null]:
+        genome = "NOT SPECIFIED!"
+        break
+    default:
+        genome = file(params.genome, type: 'file', checkIfExists: true)
+        index_dir = genome.getParent()
+        bind_dirs.add(genome.getParent())
 }
 
 // USER PARAMETER INPUT: GENOME ANNOTATION FILE (GFT/GFF)
-if(params.genes == null) {
-    exit 1, "$genes_error"
-} else{
-    genes = file(params.genes, type: 'file') 
+switch (params.genes) {
+    case [null]:
+        genes = "NOT SPECIFIED!"
+        break
+    default:
+        genes = file(params.genes, type: 'file', checkIfExists: true)
+        bind_dirs.add(genes.getParent())
 }
 
-// USER INPUT MODE: WHICH ANALYSIS TO RUN!
-if(params.mode == null) {
-    exit 1, "$mode_error"
-} else {
-    mode = params.mode
+// USER PARAMETER INPUT: OUTPUT DIRECTORY
+switch (params.out) {
+    case [null]:
+        out_dir = file("${PWD}/results_nf-rnaSeqMetagen", type: 'dir')
+        break
+    default:
+        out_dir = file(params.out, type: 'dir')
+        bind_dirs.add(out_dir)
+}
+
+// USER PARAMETER INPUT: KRAKEN2 DB DIRECTORY
+switch (params.db) {
+    case [null]:
+        db = "NOT SPECIFIED!"
+        break
+    default:
+        db = file(params.db, type: 'dir')
+        db.mkdir()
+        taxonomy = file("$db/taxonomy", type: 'dir')
+        bind_dirs.add(db)
 }
 
 // USER STRANDED MODE: ARE WE DOING PAIRED- OR SINGLE-END?
@@ -165,38 +165,12 @@ if(params.singleEnd == null && params.pairedEnd == null) {
     stranded = "paired-end"
 } else {}
 
-// USER PARAMETER INPUT: PATHS TO BE BINDED TO THE IMAGE
-bind_dir      = [ params.data, out_dir, db, new File("${params.genome}").getParent(), new File("${params.genes}").getParent() ]
-    .unique()
-    .collect { it -> "-B ${it}"}
-    .join("\n" + ' '.multiply(26))
-    .toString()
 
-// OUTPUT DIRECTORIES
-out_dir.mkdir()
-ext           = "fastq,fastq.gz,fastq.bz2,fq,fq.gz,fq.bz2"
-
-//  ======================================================================================================
-//  RUN INFO
-//  ======================================================================================================
-options="nf-rnaSeqMetagen v0.2 - Input/Output and Parameters:"
-println "\n" + "=".multiply(100)
-println "#".multiply(48 - ("${options}".size() / 2 )) + "  ${options}  " + "#".multiply(48 - ("${options}".size() / 2 ))
-println "=".multiply(100)
-println "Input data              : $data_dir"
-println "Input data type         : $stranded"
-println "Output directory        : $out_dir"
-println "Genome                  : $genome"
-println "Genome annotation       : $genes"
-println "Kraken2 DB directory    : $db"
-println "Paths to bind           : $bind_dir"
-println "=".multiply(100)
-println " "
-
-/*  ======================================================================================================
- *  PIPELINE START
- *  ======================================================================================================
- */
+def breakIfNull(parameter,error) {
+    if (parameter == null) {
+        exit 1, error
+    } else {}
+}
 
 // DATA ABSENT ERRORS
 main_data_error = """
@@ -207,35 +181,93 @@ Please ensure that you have given me the correct directory for you FASTQ input r
 ${line}
 """
 
-// GET INPUT DATA DEPENDING ON USER "MODE"
-if (mode in ["prep.Containers", "prep.STARIndex", "prep.BowtieIndex", "prep.KrakenDB"]) {
-    // OPTIONS FOR PREPARING DATA
-    switch (mode) {
-        case ["prep.Containers"]:
-            
-            break
-        case ["prep.STARIndex","prep.BowtieIndex"]:
-            
-            break
-        case ["prep.KrakenDB"]:
-            
-            break
-    }
-} else if (mode == "run.FilterClassify") {
-    // OPTIONS FOR PERFORMING THE ANALYSES
-    if(stranded == "paired-end") {
-        read_pairs = Channel.fromFilePairs("${data_dir}/*{R,read}[1,2]*.{${ext}}", type: 'file')
-            .ifEmpty { exit 1, "$main_data_error" }
-    } else if(stranded == "single-end") {
-        read_pairs = Channel.fromFilePairs("${data_dir}/*.{${ext}}", type: 'file', size:1)
-            .ifEmpty { exit 1, "$main_data_error" }
-    }
-} else {
-    exit 1, "$mode_error"
+// USER INPUT MODE: WHICH ANALYSIS TO RUN!
+switch (params.mode) {
+    case [null]:
+        exit 1, "$mode_error"
+        
+    // DATA NOT REQUIRED FOR THESE MODES!
+    case [ "prep.Containers", "prep.STARIndex", "prep.BowtieIndex", "prep.KrakenDB" ]:
+        mode = params.mode
+        
+        switch (mode) {
+            case ["prep.Containers"]:
+                break
+                
+            case ["prep.STARIndex","prep.BowtieIndex"]:
+                breakIfNull(params.genome,"$genome_error")
+                breakIfNull(params.genes,"$genes_error")
+                break
+                
+            case ["prep.KrakenDB"]:
+                breakIfNull(params.db,"$db_error")
+                break
+        }
+        break
+        
+
+    // MAIN WORKFLOW PARAMETER CHECKS
+    case ["run.FilterClassify"]:
+        mode = params.mode
+        
+        // BREAK THE WORKFLOW IF THE FOLLOWING PARAMETERS AREN'T SPECIFIED!
+        breakIfNull(params.data,"$data_error")
+        breakIfNull(params.genome,"$genome_error")
+        breakIfNull(params.genes,"$genes_error")
+        breakIfNull(params.db,"$db_error")
+
+        // GET THE INPUT DATA!
+        ext = "fastq,fastq.gz,fastq.bz2,fq,fq.gz,fq.bz2"
+        
+        // GET DATA BASED ON THE STRANDEDNESS
+        switch (stranded) {
+            case ["paired-end"]:
+                read_pairs = Channel.fromFilePairs("${data_dir}/*{R,read}[1,2]*.{${ext}}", type: 'file')
+                    .ifEmpty { exit 1, "$main_data_error" }
+                break
+            case ["single-end"]:
+                read_pairs = Channel.fromFilePairs("${data_dir}/*.{${ext}}", type: 'file', size:1)
+                    .ifEmpty { exit 1, "$main_data_error" }
+                break
+        }
+        
+        // OUTPUT DIRECTORIES
+        out_dir.mkdir()
+        break
 }
 
+// USER PARAMETER INPUT: PATHS TO BE BINDED TO THE IMAGE
+bind_dirs = bind_dirs
+    .unique()
+    .collect { it -> "-B ${it}"}
+    .join("\n" + ' '.multiply(26))
+    .toString()
+
+/*  ======================================================================================================
+ *  RUN INFO
+ *  ======================================================================================================
+ */
+options="nf-rnaSeqMetagen v0.2 - Input/Output and Parameters:"
+println "\n" + "=".multiply(100)
+println "#".multiply(48 - ("${options}".size() / 2 )) + "  ${options}  " + "#".multiply(48 - ("${options}".size() / 2 ))
+println "=".multiply(100)
+println "Input data              : $data_dir"
+println "Input data type         : $stranded"
+println "Output directory        : $out_dir"
+println "Genome                  : $genome"
+println "Genome annotation       : $genes"
+println "Kraken2 DB directory    : $db"
+println "Paths to bind           : $bind_dirs"
+println "=".multiply(100)
+println " "
+
+/*  ======================================================================================================
+ *  PIPELINE START
+ *  ======================================================================================================
+ */
+
 switch (mode) {
-        // ========== THIS SECTION IS FOR PREPPING DATA (SINGULARITY IMAGES, STAR INDEXES AND BOWTIE INDEXES)
+    // ========== THIS SECTION IS FOR PREPPING DATA (SINGULARITY IMAGES, STAR INDEXES AND BOWTIE INDEXES)
     case ['prep.Containers']: 
         base = "shub://phelelani/nf-rnaSeqMetagen:"
         images = Channel.from( ["${base}star", "${base}kraken2", "${base}upset", "${base}multiqc", "${base}trinity"] )
@@ -258,7 +290,6 @@ switch (mode) {
         break
         // ==========
         
-        //
     case ['prep.STARIndex']:
         process run_GenerateSTARIndex {
             label 'maxi'
@@ -288,7 +319,6 @@ switch (mode) {
         break
         // ==========
         
-        //
     case ['prep.BowtieIndex']:
         process run_GenerateBowtieIndex {
             label 'maxi'
@@ -311,25 +341,42 @@ switch (mode) {
             println " "
         }
         break
-
+        // ==========
         
     case ['prep.KrakenDB']:
         process run_GenerateKrakenDB {
             label 'maxi'
             tag { "Generate Kraken DB" }
-            publishDir "$db", mode: 'copy', overwrite: true
+            publishDir "$db", mode: 'copy', overwrite: false
            
             output:
-            file("*") into kraken_db
+            file("*.k2d") into kraken_db
+            file("taxonomy/taxdump.tar.gz") into taxonomy_dump
             
             """
             kraken2-build --standard --threads ${task.cpus} --db .
             """
         }
+
+        process run_UpdateTaxonomy {
+            label 'mini'
+            tag { "Update NCBI Taxonomy" }
+            publishDir "$taxonomy", mode: 'copy', overwrite: true
+            
+            input:
+            file(dmp) from taxonomy_dump
+            
+            output:
+            file("*") into taxonomy_update
+            
+            """
+            /opt/KronaTools-2.7/updateTaxonomy.sh --only-build --preserve .
+            """
+        }
         break
         // ========== PREPPING STEPS/OPTIONS END HERE!
 
-        // ========== THIS SECTION IS FOR THE MAIN WORKFLOW!
+    // ========== THIS SECTION IS FOR THE MAIN WORKFLOW!
     case ['run.FilterClassify']:
         // 1.  ALIGN READS TO REFERENCE GENOME
         process run_STAR {
