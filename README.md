@@ -134,17 +134,17 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.Containers
 To generate the `STAR` and `Bowtie2` genome indexes, run the following commands:
 ```bash
 ## Generate STAR indexes
-nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.STARIndex --genome "reference/genome.fa" --genes "reference/genes.gtf"
+nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.STARIndex --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
 
 ## Generate Bowtie2 indexes:
-nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.BowtieIndex --genome "reference/genome.fa" --genes "reference/genes.gtf"
+nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.BowtieIndex --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
 ```
 
 ### 1.4. Creating the Kraken2 database:
 To create the Kraken2 database, run the following command:
 ```bash
 ## Create Kraken2 database
-nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.KrakenDB
+nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.KrakenDB --db $PWD/K2DB
 ```
 
 We are now ready to execute the workflow!
@@ -155,9 +155,10 @@ We are now ready to execute the workflow!
 As seen on the `help menu` above, there are a couple of options that you can use with this workflow. It can become a bit tedious and confusing having to specify these commands everytime you have to execute the each section for the analysis. To make your life easier, we will create a configuration script that we will use in this tutorial (we will pass this using the `-c` option of `nextflow`). You can name it whatever you want, but for now, lets call it `myparams.config`. We will add the mandatory arguements for now, but as you become more farmiliar with the workflow - you can experiment with other options. You can use your favourite text editor to create the `myparams.config` file. Copy and paste the the parameters below:
 ```
 params {
-    data = "data/"
-    genome = "reference/genome.fa"
-    genes = "reference/genes.fa"
+    data    = "$PWD/data"
+    db      = "$PWD/K2DB"
+    genome  = "$PWD/reference/genome.fa"
+    genes   = "$PWD/reference/genes.fa"
 }
 ```
 Obviously - the above `myparams.config` assumes that you have been following this tutorial. If you have your data lying around somewhere in your system, you need to put the full path to where your the `data`, `genome` and `genes` files are. Since the `--mode` will keep changing, we will add this on the command as we do the analysis. Now that we have the mandatory arguements in our `myparams.config`, lets do some analysis
@@ -172,54 +173,55 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 
 ## 3. Explore `nf-rnaSeqMetagen` results
 
-<!-- ``` -->
-<!-- - [1] Read QC (optional)         =>    `<output_directory>/1_RQC` -->
-<!-- - [2] Read Trimming (optional)   =>    `<output_directory>/2_Read_Trimming` -->
-<!-- - [3] Read Alignment             =>    `<output_directory>/3_Read_Alignment` -->
-<!-- - [4] Read Counting              =>    `<output_directory>/4_Read_Counts` -->
-<!-- - [5] MultiQC                    =>    `<output_directory>/5_MultiQC -->
-<!-- - [6] Workflow tracing           =>    `<output_directory>/workflow-tracing -->
-<!-- ``` -->
-<!-- In addition to the 5 directories created for each step in the results directory, a directory `workflow-tracing` is created to monitor the resources used in each step. This directory will contain 4 files for each step (--mode) of the workflow: -->
-<!-- - `nf-rnaSeqMetagen_<mode>_report.html` -->
-<!-- - `nf-rnaSeqMetagen_<mode>_timeline.html` -->
-<!-- - `nf-rnaSeqMetagen_<mode>_trace.txt` -->
+```
+- [1] Sample analysis directories  =>    `<output_directory>/<sample_1> .. <sample_N>`
+- [2] MultiQC                      =>    `<output_directory>/MultiQC`
+- [3] Upset tool                   =>    `<output_directory>/upset`
+- [4] Workflow tracing             =>    `<output_directory>/workflow-tracing
+```
+In addition to the directories created in the results directory, a directory `workflow-tracing` is created to monitor the resources used for filtering and classification. This directory will contain 4 files:
+- `nf-rnaSeqMetagen_report.html`
+- `nf-rnaSeqMetagen_timeline.html`
+- `nf-rnaSeqMetagen_trace.txt`
+- `nf-rnaSeqMetagen_flow.dot`
 
-<!-- These files contain detailed information on the resources (CPU, MEMORY and TIME) usage of each of the process in the different pipeline steps. The `<output_directory>` directory structure is summarized below: -->
+These files contain detailed information on the resources (CPU, MEMORY and TIME) usage of each of the process in the pipeline. The `<output_directory>` directory structure is summarized below:
 
-<!-- ```bash -->
-<!-- <output_directory> -->
-<!-- |--1_Read_QC -->
-<!-- |  |--<sample_1>_R1.fastqc.html .. <sample_N>_R1.fastqc.html -->
-<!-- |  |--<sample_1>_R2.fastqc.html .. <sample_N>_R1.fastqc.html -->
-<!-- |--2_Read_Trimming -->
-<!-- |  |--<sample_1>.1P.fastq.gz .. <sample_N>.1P.fastq.gz -->
-<!-- |  |--<sample_1>.2P.fastq.gz .. <sample_N>.2P.fastq.gz -->
-<!-- |--3_Read_Alignment -->
-<!-- |  |--<sample_1>_Aligned.out.bam .. <sample_N>_Aligned.out.bam -->
-<!-- |  |--<sample_1>_Log.final.out .. <sample_N>_Log.final.out -->
-<!-- |  |--<sample_1>_Log.out .. <sample_N>_Log.out -->
-<!-- |  |--<sample_1>_Log.progress.out .. <sample_N>_Log.progress.out -->
-<!-- |  |--<samplle_1>_SJ.out.tab .. <sample>_SJ.out.tab -->
-<!-- |--4_Read_Counts -->
-<!-- |  |--featureCounts -->
-<!-- |  |  |--gene_counts_final.txt -->
-<!-- |  |  |--gene_counts.txt -->
-<!-- |  |  |--gene_counts.txt.jcounts -->
-<!-- |  |  |--gene_counts.txt.summary -->
-<!-- |  |--htseqCounts -->
-<!-- |  |  |--gene_counts_final.txt -->
-<!-- |  |  |--<sample>.txt .. <sample>.txt -->
-<!-- |--5_MultiQC -->
-<!-- |  |--multiqc_data -->
-<!-- |  |--multiqc_report.html -->
-<!-- |--workflow-tracing -->
-<!-- |  |--nf-rnaSeqMetagen_run.MultiQC_{report.html,timeline.html,trace.txt} -->
-<!-- |  |--nf-rnaSeqMetagen_run.ReadAlignment_{report.html,timeline.html,trace.txt} -->
-<!-- |  |--nf-rnaSeqMetagen_run.ReadCounting_{report.html,timeline.html,trace.txt} -->
-<!-- |  |--nf-rnaSeqMetagen_run.ReadTrimming_{report.html,timeline.html,trace.txt} -->
-<!-- |  |--nf-rnaSeqMetagen_run.ReadQC_{report.html,timeline.html,trace.txt} -->
-<!-- ``` -->
-<!-- **NB:** I am working on further improving the pipleine and the associated documentation, feel free to share comments and suggestions! -->
+```bash
+<output_directory>
+|--<sample_1> 
+|  |--<sample_1>.fasta.html
+|  |--<sample_1>.reads.html
+|  |--<sample_1>_classified.fasta
+|  |--<sample_1>_fasta.krak
+|  |--<sample_1>_fasta.kron
+|  |--<sample_1>_reads.kron
+|  |--taxon_sequences
+|  |  |--taxid<1>.fasta .. taxid<n>.fasta
+|  |--trinity_<sample_1>
+|  |  |--Trinity.fasta
+..
+|--<sample_N> 
+|  |--<sample_N>.fasta.html
+|  |--<sample_N>.reads.html
+|  |--<sample_N>_classified.fasta
+|  |--<sample_N>_fasta.krak
+|  |--<sample_N>_fasta.kron
+|  |--<sample_N>_reads.kron
+|  |--taxon_sequences
+|  |  |--taxid<1>.fasta .. taxid<n>.fasta
+|  |--trinity_<sample_N>
+|  |  |--Trinity.fasta
+|--MultiQC
+|  |--multiqc_data
+|  |--multiqc_report.html
+|--upset
+|  |--data
+|  |  |--nf-rnaSeqMetagen.csv
+|  |  |--nf-rnaSeqMetagen.json
+|--workflow-tracing
+|  |--nf-rnaSeqMetagen_{report.html,timeline.html,trace.txt,flow.dot}
+```
+**NB:** I am working on further improving the pipleine and the associated documentation, feel free to share comments and suggestions!
 
-<!-- --- -->
+---
