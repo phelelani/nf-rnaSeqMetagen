@@ -96,7 +96,9 @@ ${line}
 
 db_error = """
 ${line}
-SOMETHING HERE!!!
+Oooh no!! Looks like there's a serious issue in your command! 
+I do not recognise the \'--db ${params.db}\' option you have given me, or you have not given me any \'--db\' option at all!
+Please provide a valid directory with your Kraken database with the \'--db\' option to run the nf-rnaSeqMetagen workflow! 
 ${line}
 """
 
