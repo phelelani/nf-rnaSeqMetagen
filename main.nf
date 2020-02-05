@@ -553,7 +553,7 @@ switch (mode) {
         process run_MultiQC {
             label 'mini'
             tag { "Get QC Information" }
-            publishDir "$out_dir/report_multiqc", mode: 'copy', overwrite: true
+            publishDir "$out_dir/MultiQC", mode: 'copy', overwrite: true
 
             input:
             file(star) from qc_star
