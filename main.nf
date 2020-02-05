@@ -37,7 +37,7 @@ if (params.help) {
     println "OPTIONAL ARGUEMENTS:"
     println "--help                 To show this menu."
     println "--out        FOLDER    Path to where the output should be directed."
-    println "                       Default: \$PWD/results_nf-rnaSeqCount"
+    println "                       Default: \$PWD/results_nf-rnaSeqMetagen"
     println "--pairedEnd            If working with paired-end FASTQ files (default)."
     println "--singleEnd            If working with single-end FASTQ files."
     println "--max_memory STRING    Maximum memory you have access to."
@@ -230,9 +230,11 @@ switch (params.mode) {
                     .ifEmpty { exit 1, "$main_data_error" }
                 break
         }
-        
         // OUTPUT DIRECTORIES
         out_dir.mkdir()
+        break
+    default:
+        exit 1, "$mode_error"
         break
 }
 
