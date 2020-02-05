@@ -38,8 +38,6 @@ if (params.help) {
     println "--help                 To show this menu."
     println "--out        FOLDER    Path to where the output should be directed."
     println "                       Default: \$PWD/results_nf-rnaSeqMetagen"
-    println "--pairedEnd            If working with paired-end FASTQ files (default)."
-    println "--singleEnd            If working with single-end FASTQ files."
     println "--max_memory STRING    Maximum memory you have access to."
     println "                       Default: \"200.GB\""
     println "--max_cpus   STRING    Maximum CPUs you have access to."
@@ -158,16 +156,6 @@ switch (params.db) {
         bind_dirs.add(db)
 }
 
-// USER STRANDED MODE: ARE WE DOING PAIRED- OR SINGLE-END?
-if(params.singleEnd == null && params.pairedEnd == null) {
-    stranded = "paired-end"
-} else if(params.singleEnd) {
-    stranded = "single-end"
-} else if(params.pairedEnd){
-    stranded = "paired-end"
-} else {}
-
-
 def breakIfNull(parameter,error) {
     if (parameter == null) {
         exit 1, error
@@ -221,17 +209,10 @@ switch (params.mode) {
         // GET THE INPUT DATA!
         ext = "fastq,fastq.gz,fastq.bz2,fq,fq.gz,fq.bz2"
         
-        // GET DATA BASED ON THE STRANDEDNESS
-        switch (stranded) {
-            case ["paired-end"]:
-                read_pairs = Channel.fromFilePairs("${data_dir}/*{R,read}[1,2]*.{${ext}}", type: 'file')
-                    .ifEmpty { exit 1, "$main_data_error" }
-                break
-            case ["single-end"]:
-                read_pairs = Channel.fromFilePairs("${data_dir}/*.{${ext}}", type: 'file', size:1)
-                    .ifEmpty { exit 1, "$main_data_error" }
-                break
-        }
+        // GET DATA
+        read_pairs = Channel.fromFilePairs("${data_dir}/*{R,read}[1,2]*.{${ext}}", type: 'file')
+            .ifEmpty { exit 1, "$main_data_error" }
+        
         // OUTPUT DIRECTORIES
         out_dir.mkdir()
         break
@@ -256,7 +237,6 @@ println "\n" + "=".multiply(100)
 println "#".multiply(48 - ("${options}".size() / 2 )) + "  ${options}  " + "#".multiply(48 - ("${options}".size() / 2 ))
 println "=".multiply(100)
 println "Input data              : $data_dir"
-println "Input data type         : $stranded"
 println "Output directory        : $out_dir"
 println "Genome                  : $genome"
 println "Genome annotation       : $genes"
