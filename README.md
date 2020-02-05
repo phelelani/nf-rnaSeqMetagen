@@ -69,6 +69,13 @@ MANDATORY ARGUEMENTS:
 -profile     STRING    Executor to be used. Available options:
 				"standard"          : Local execution (no job scheduler).
                 "slurm"             : SLURM scheduler.
+--mode       STRING    To specify which step of the workflow you are running (see https://github.com/phelelani/nf-rnaSeqMetagen).
+                       Available options:
+				"prep.Containers"   : For downloading Singularity containers used in this workflow.
+                "prep.STARIndex"    : For indexing your reference genome using STAR.
+                "prep.BowtieIndex"  : For indexing your reference genome using Bowtie2.
+                "prep.KrakenDB"     : For building the Kraken2 database.
+                "run.FilterClassify": For performing metagenomics analysis, i.e., filtering and classification.
 --data       FOLDER    Path to where the input data (FASTQ files) is located. Supported FASTQ files:
 				[ fastq | fastq.gz | fastq.bz2 | fq | fq.gz | fq.bz2 ]
 --genome     FILE      The whole genome FASTA sequence. Supported FASTA files:
@@ -77,13 +84,6 @@ MANDATORY ARGUEMENTS:
 				[ gtf ]
 --db         FOLDER    Path to where the Kraken2 database will be saved (or where it is located if already created).
                        Default: $PWD/kraken2db
---mode       STRING    To specify which step of the workflow you are running (see https://github.com/phelelani/nf-rnaSeqMetagen).
-                       Available options:
-				"prep.Containers"   : For downloading Singularity containers used in this workflow.
-                "prep.STARIndex"    : For indexing your reference genome using STAR.
-                "prep.BowtieIndex"  : For indexing your reference genome using Bowtie2.
-                "prep.KrakenDB"     : For building the Kraken2 database.
-                "run.FilterClassify": For performing metagenomics analysis, i.e., filtering and classification.
 
 OPTIONAL ARGUEMENTS:
 --help                 To show this menu.
