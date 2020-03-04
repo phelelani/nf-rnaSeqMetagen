@@ -84,13 +84,13 @@ Please provide a valid FASTA file (.fasta or .fa) for your reference genome with
 ${line}
 """
 
-// genes_error = """
-// ${line}
-// Oooh no!! Looks like there's a serious issue in your command! 
-// I do not recognise the \'--genes ${params.genes}\' option you have given me, or you have not given me any \'--genes\' option at all!
-// Please provide a valid GTF annotation file (.gtf) for your reference genome with the \'--genes\' option to run the nf-rnaSeqMetagen workflow! 
-// ${line}
-// """
+genes_error = """
+${line}
+Oooh no!! Looks like there's a serious issue in your command! 
+I do not recognise the \'--genes ${params.genes}\' option you have given me, or you have not given me any \'--genes\' option at all!
+Please provide a valid GTF annotation file (.gtf) for your reference genome with the \'--genes\' option to run the nf-rnaSeqMetagen workflow! 
+${line}
+"""
 
 db_error = """
 ${line}
@@ -124,15 +124,15 @@ switch (params.genome) {
         bind_dirs.add(genome.getParent())
 }
 
-// // USER PARAMETER INPUT: GENOME ANNOTATION FILE (GFT/GFF)
-// switch (params.genes) {
-//     case [null]:
-//         genes = "NOT SPECIFIED!"
-//         break
-//     default:
-//         genes = file(params.genes, type: 'file', checkIfExists: true)
-//         bind_dirs.add(genes.getParent())
-// }
+// USER PARAMETER INPUT: GENOME ANNOTATION FILE (GFT/GFF)
+switch (params.genes) {
+    case [null]:
+        genes = "NOT SPECIFIED!"
+        break
+    default:
+        genes = file(params.genes, type: 'file', checkIfExists: true)
+        bind_dirs.add(genes.getParent())
+}
 
 // USER PARAMETER INPUT: OUTPUT DIRECTORY
 switch (params.out) {
@@ -177,14 +177,14 @@ switch (params.mode) {
         exit 1, "$mode_error"
         
     // DATA NOT REQUIRED FOR THESE MODES!
-    case [ "prep.Containers", "prep.STARIndex", "prep.BowtieIndex", "prep.KrakenDB" ]:
+    case [ "prep.Containers", "prep.GenomeIndexes", "prep.KrakenDB" ]:
         mode = params.mode
         
         switch (mode) {
             case ["prep.Containers"]:
                 break
                 
-            case ["prep.STARIndex","prep.BowtieIndex"]:
+            case ["prep.GenomeIndexes"]:
                 breakIfNull(params.genome,"$genome_error")
                 // breakIfNull(params.genes,"$genes_error")
                 break
@@ -203,7 +203,7 @@ switch (params.mode) {
         // BREAK THE WORKFLOW IF THE FOLLOWING PARAMETERS AREN'T SPECIFIED!
         breakIfNull(params.data,"$data_error")
         breakIfNull(params.genome,"$genome_error")
-        // breakIfNull(params.genes,"$genes_error")
+        breakIfNull(params.genes,"$genes_error")
         breakIfNull(params.db,"$db_error")
 
         // GET THE INPUT DATA!
@@ -239,7 +239,7 @@ println "=".multiply(100)
 println "Input data              : $data_dir"
 println "Output directory        : $out_dir"
 println "Genome                  : $genome"
-// println "Genome annotation       : $genes"
+println "Genome annotation       : $genes"
 println "Kraken2 DB directory    : $db"
 println "Paths to bind           : $bind_dirs"
 println "=".multiply(100)
@@ -274,7 +274,7 @@ switch (mode) {
         break
         // ==========
         
-    case ['prep.STARIndex']:
+    case ['prep.GenomeIndexes']:
         process run_GenerateSTARIndex {
             label 'maxi'
             tag { "Generate Star Index" }
@@ -292,39 +292,39 @@ switch (mode) {
             """
         }
 
-        // --sjdbGTFfile ${genes} \
 
-        star_index.subscribe { 
-            println "\nSTAR index files generated:"
-            it[1].each { 
-                item -> println "\t${item}" 
-            }
-            println " "
-        }
-        break
-        // ==========
+    //     star_index.subscribe { 
+    //         println "\nSTAR index files generated:"
+    //         it[1].each { 
+    //             item -> println "\t${item}" 
+    //         }
+    //         println " "
+    //     }
+    //     break
+    //     // ==========
         
-    case ['prep.BowtieIndex']:
-        process run_GenerateBowtieIndex {
-            label 'maxi'
-            tag { "Generate Bowtie2 Index" }
-            publishDir "$index_dir", mode: 'copy', overwrite: true
+    // case ['prep.BowtieIndex']:
         
-            output:
-            set val("bowtieIndex"), file("*") into bowtie_index
+        // process run_GenerateBowtieIndex {
+        //     label 'maxi'
+        //     tag { "Generate Bowtie2 Index" }
+        //     publishDir "$index_dir", mode: 'copy', overwrite: true
+        
+        //     output:
+        //     set val("bowtieIndex"), file("*") into bowtie_index
             
-            """
-            bowtie2-build --threads ${task.cpus} ${genome} genome
-            """
-        }   
+        //     """
+        //     bowtie2-build --threads ${task.cpus} ${genome} genome
+        //     """
+        // }   
     
-        bowtie_index.subscribe { 
-            println "\nBowtie2 index files generated:"
-            it[1].each { 
-                item -> println "\t${item}" 
-            }
-            println " "
-        }
+        // bowtie_index.subscribe { 
+        //     println "\nBowtie2 index files generated:"
+        //     it[1].each { 
+        //         item -> println "\t${item}" 
+        //     }
+        //     println " "
+        // }
         break
         // ==========
         
@@ -446,7 +446,7 @@ switch (mode) {
         // 3. Assemble the reads into longer contigs/sequences for classification.
         process run_TrinityAssemble {
             label 'maxi'
-            memory '150 GB'
+//            memory '150 GB'
             tag { sample }
             publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
 
