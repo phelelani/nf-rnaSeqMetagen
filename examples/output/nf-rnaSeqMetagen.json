@@ -1,5 +1,5 @@
 {
-    "file": "data/nf-rnaSeqMetagen/nf-rnaSeqMetagen.csv",
+    "file": "https://raw.githubusercontent.com/phelelani/nf-rnaSeqMetagen/master/examples/output/nf-rnaSeqMetagen.csv",
     "name": "nf-rnaSeqMetagen",
     "header": 0,
     "separator": ",",
