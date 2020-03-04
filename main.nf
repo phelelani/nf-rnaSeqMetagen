@@ -84,13 +84,13 @@ Please provide a valid FASTA file (.fasta or .fa) for your reference genome with
 ${line}
 """
 
-genes_error = """
-${line}
-Oooh no!! Looks like there's a serious issue in your command! 
-I do not recognise the \'--genes ${params.genes}\' option you have given me, or you have not given me any \'--genes\' option at all!
-Please provide a valid GTF annotation file (.gtf) for your reference genome with the \'--genes\' option to run the nf-rnaSeqMetagen workflow! 
-${line}
-"""
+// genes_error = """
+// ${line}
+// Oooh no!! Looks like there's a serious issue in your command! 
+// I do not recognise the \'--genes ${params.genes}\' option you have given me, or you have not given me any \'--genes\' option at all!
+// Please provide a valid GTF annotation file (.gtf) for your reference genome with the \'--genes\' option to run the nf-rnaSeqMetagen workflow! 
+// ${line}
+// """
 
 db_error = """
 ${line}
@@ -124,15 +124,15 @@ switch (params.genome) {
         bind_dirs.add(genome.getParent())
 }
 
-// USER PARAMETER INPUT: GENOME ANNOTATION FILE (GFT/GFF)
-switch (params.genes) {
-    case [null]:
-        genes = "NOT SPECIFIED!"
-        break
-    default:
-        genes = file(params.genes, type: 'file', checkIfExists: true)
-        bind_dirs.add(genes.getParent())
-}
+// // USER PARAMETER INPUT: GENOME ANNOTATION FILE (GFT/GFF)
+// switch (params.genes) {
+//     case [null]:
+//         genes = "NOT SPECIFIED!"
+//         break
+//     default:
+//         genes = file(params.genes, type: 'file', checkIfExists: true)
+//         bind_dirs.add(genes.getParent())
+// }
 
 // USER PARAMETER INPUT: OUTPUT DIRECTORY
 switch (params.out) {
@@ -186,7 +186,7 @@ switch (params.mode) {
                 
             case ["prep.STARIndex","prep.BowtieIndex"]:
                 breakIfNull(params.genome,"$genome_error")
-                breakIfNull(params.genes,"$genes_error")
+                // breakIfNull(params.genes,"$genes_error")
                 break
                 
             case ["prep.KrakenDB"]:
@@ -203,7 +203,7 @@ switch (params.mode) {
         // BREAK THE WORKFLOW IF THE FOLLOWING PARAMETERS AREN'T SPECIFIED!
         breakIfNull(params.data,"$data_error")
         breakIfNull(params.genome,"$genome_error")
-        breakIfNull(params.genes,"$genes_error")
+        // breakIfNull(params.genes,"$genes_error")
         breakIfNull(params.db,"$db_error")
 
         // GET THE INPUT DATA!
@@ -239,7 +239,7 @@ println "=".multiply(100)
 println "Input data              : $data_dir"
 println "Output directory        : $out_dir"
 println "Genome                  : $genome"
-println "Genome annotation       : $genes"
+// println "Genome annotation       : $genes"
 println "Kraken2 DB directory    : $db"
 println "Paths to bind           : $bind_dirs"
 println "=".multiply(100)
@@ -288,10 +288,11 @@ switch (mode) {
                 --runMode genomeGenerate \
                 --genomeDir . \
                 --genomeFastaFiles ${genome} \
-                --sjdbGTFfile ${genes} \
                 --sjdbOverhang 99
             """
         }
+
+        // --sjdbGTFfile ${genes} \
 
         star_index.subscribe { 
             println "\nSTAR index files generated:"
