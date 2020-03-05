@@ -210,7 +210,7 @@ switch (params.mode) {
         ext = "fastq,fastq.gz,fastq.bz2,fq,fq.gz,fq.bz2"
         
         // GET DATA
-        read_pairs = Channel.fromFilePairs("${data_dir}/*{R,read}[1,2]*.{${ext}}", type: 'file')
+        read_pairs = Channel.fromFilePairs("${data_dir}/*{R,read,_}[1,2]*.{${ext}}", type: 'file')
             .ifEmpty { exit 1, "$main_data_error" }
         
         // OUTPUT DIRECTORIES
