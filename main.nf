@@ -288,6 +288,7 @@ switch (mode) {
                 --runMode genomeGenerate \
                 --genomeDir . \
                 --genomeFastaFiles ${genome} \
+                --sjdbGTFfile ${genes} \
                 --sjdbOverhang 99
             """
         }
