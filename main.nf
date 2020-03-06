@@ -434,7 +434,6 @@ switch (mode) {
             set sample, file("${sample}_unclassified_*.fastq") into kraken_unclassified_reads
 
             """	
-            /bin/hostname
             kraken2 --db ${db} \
                 --paired ${reads.findAll().join(' ')} \
                 --threads ${task.cpus} \
