@@ -35,7 +35,7 @@ the_table[is.na(the_table)] <- 0
 
 ## ## Remove taxons that are found throughout the samples - not useful
 the_table <- the_table[!(rownames(the_table) == 1),]
-the_table <- the_table[!rowSums(the_table) %in% c(0,1,2,3,length(colnames(the_table))),]
+the_table <- the_table[!rowSums(the_table) %in% c(0,length(colnames(the_table))),]
 
 ## Order table by column names
 the_table <- the_table[,order(names(the_table))]
