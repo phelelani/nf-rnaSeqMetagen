@@ -4,6 +4,10 @@
 *nf-rnaSeqMetagen* is a [Nextflow](http://nextflow.io/)
 
 
+[![asciicast](images/test.cast)](images/test.cast)
+
+
+
 To use the `nf-rnaSeqMetagen` pipeline, the following dependencies are required:
    1. Installed softwares:
       - [`Nextflow`](https://www.nextflow.io/)
