@@ -111,18 +111,8 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 ### Sample Analysis Directories
 
 ### MultiQC
-<iframe width="1000" height="1000" seamless frameborder="1" scrolling="yes" src="images/SRR5074528_fasta.html"></iframe>
+<iframe style="overflow: hidden; margin: 0px; border: 1px; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless frameborder="5px" scrolling="no" src="../examples/output/MultiQC/multiqc_report.html"></iframe>
 
-<iframe style="overflow: hidden; margin: 0px; border: 1px; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless frameborder="1" scrolling="no" src="images/SRR5074528_fasta.html"></iframe>
-
-<iframe style="overflow: hidden; margin: 0px; border: 1px; display: inline-block; width: 832px; float: none; visibility: visible;" scrolling="no" src="images/SRR5074528_fasta.html"></iframe>
-
-
-[LINK TO MULTIQC](https://phelelani.github.io/nf-rnaSeqMetagen/examples/output/MultiQC/multiqc_report.html)
-
-[TEST1](https://github.com/phelelani/nf-rnaSeqMetagen/blob/master/examples/output/MultiQC/multiqc_report.html)
-
-[test3](https://raw.githubusercontent.com/phelelani/nf-rnaSeqMetagen/master/examples/output/MultiQC/multiqc_report.html)
 ### UpSet Visualisation Tool
 
 ### Workflow Tracing
