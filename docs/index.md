@@ -27,7 +27,7 @@ nextflow pull https://github.com/phelelani/nf-rnaSeqMetagen
 <script id="asciicast-308777" src="https://asciinema.org/a/308777.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="6" data-speed="1.5" data-loop="0"></script>
 
 Content of the repository (located in `$HOME/.nextflow/assets/phelelani/nf-rnaSeqCount`):
-<script id="asciicast-308808" src="https://asciinema.org/a/308808.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="12" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308808" src="https://asciinema.org/a/308808.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="12" data-speed="1.5" data-loop="0"></script>
 
 To get the `help menu` for the workflow, execute the following command from anywherre on your system:
 ```
@@ -111,7 +111,8 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 ### Sample Analysis Directories
 
 ### MultiQC
-
+[LINK TO MULTIQC](https://phelelani.github.io/nf-rnaSeqMetagen/examples/output/MultiQC/multiqc_report.html)
+[TEST1](https://github.com/phelelani/nf-rnaSeqMetagen/blob/master/examples/output/MultiQC/multiqc_report.html)
 ### UpSet Visualisation Tool
 
 ### Workflow Tracing
