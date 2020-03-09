@@ -12,12 +12,7 @@ if (params.help) {
     println "#".multiply(48 - ("${ver}".size() / 2 )) + "  ${ver}   " + "#".multiply(48 - ("${ver}".size() / 2 ))
     println "${line}\n"
     println "USAGE:"
-    println "nextflow run nf-rnaSeqMetagen \\"
-    println "\t-profile \"slurm\" \\"
-    println "\t--data \"/path/to/data\" \\"
-    println "\t--genome \"/path/to/genome.fa\" \\"
-    println "\t--genes \"/path/to/genes.gtf\" \\"
-    println "\t--db \"/path/to/krakendb\"\n" 
+    println "nextflow run nf-rnaSeqMetagen -profile slurm --data /path/to/data --genome path/to/genome.fa --genes /path/to/genes.gtf --db /path/to/db\n" 
     println "HELP:"
     println "nextflow run nf-rnaSeqMetagen --help\n"
     println "MANDATORY ARGUEMENTS:"
