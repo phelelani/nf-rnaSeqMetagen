@@ -1,5 +1,0 @@
-Module	Section	Sample Name	Source
-STAR	SummaryLog	SRR5074529	/home/phelelani/projects/metagenomics/mouse/work/90/70f702d5ea8137387c1e3a00282d6a/SRR5074529_Log.final.out
-STAR	SummaryLog	SRR5074530	/home/phelelani/projects/metagenomics/mouse/work/eb/b38b2e8f72bcae02f64b7c017e507e/SRR5074530_Log.final.out
-STAR	SummaryLog	SRR5074531	/home/phelelani/projects/metagenomics/mouse/work/11/25668dd594915a53415a2ba319498e/SRR5074531_Log.final.out
-STAR	SummaryLog	SRR5074528	/home/phelelani/projects/metagenomics/mouse/work/0d/7ade6b790e6920962ad0d07d73110f/SRR5074528_Log.final.out
