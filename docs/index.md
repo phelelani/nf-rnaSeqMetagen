@@ -3,14 +3,6 @@
 
 *nf-rnaSeqMetagen* is a [Nextflow](http://nextflow.io/)
 
-<script id="asciicast-308738" src="https://asciinema.org/a/308738.js" async></script>
-
-<a href="https://asciinema.org/a/14?autoplay=1"><img src="https://asciinema.org/a/14.png" width="836"/></a>
-
-[![asciicast](images/test.cast)](images/test.cast)
-
-
-
 To use the `nf-rnaSeqMetagen` pipeline, the following dependencies are required:
    1. Installed softwares:
       - [`Nextflow`](https://www.nextflow.io/)
@@ -31,6 +23,9 @@ First, you need to clone the `nf-rnaSeqMetagen` repository onto you machine. You
 ## Using nextflow
 nextflow pull https://github.com/phelelani/nf-rnaSeqMetagen
 ```
+
+<script id="asciicast-308738" src="https://asciinema.org/a/308738.js" async data-autoplay="true" data-size="big"></script>
+
 Content of the repository (will be in "$HOME/.nextflow/assets/phelelani/nf-rnaSeqCount"):
 ```bash
 nf-rnaSeqMetagen
