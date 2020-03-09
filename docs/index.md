@@ -17,87 +17,23 @@ To use the `nf-rnaSeqMetagen` pipeline, the following dependencies are required:
   <img width="600" src="images/nf-rnaSeqMetagen.png">
 </p>
 
+---
+
 ## 1. Obtaining the `nf-rnaSeqMetagen` pipeline and preparing data
 First, you need to clone the `nf-rnaSeqMetagen` repository onto you machine. You can either use `git` or `nextflow` (see the two methods below). I recommend using `nextflow` and creating you own `config` file (will explain later) for executing the workflow in the directory of your choosing. The rest of this documentation assumes that you have used `nextflow` to clone this workflow - If your're an expert and have used `git` to clone the workflow - you know what to do :)
 ```bash
 nextflow pull https://github.com/phelelani/nf-rnaSeqMetagen
 ```
-
 <script id="asciicast-308777" src="https://asciinema.org/a/308777.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="6" data-speed="1.5" data-loop="0"></script>
 
-Content of the repository (will be in "$HOME/.nextflow/assets/phelelani/nf-rnaSeqCount"):
-```bash
-nf-rnaSeqMetagen
-|--containers                       ## Folder for Singularity images and recipes (in case you want to build yourself). All downloaded images go here!
-|  |--Singularity.kraken2           ## Singularity recipe file for
-|  |--Singularity.multiQC           ## Singularity recipe file for 
-|  |--Singularity.star              ## Singularity recipe file for 
-|  |--Singularity.trinity           ## Singularity recipe file for 
-|  |--Singularity.upset             ## Singularity recipe file for
-|--templates                        ## Folder for extra scripts for the pipeline.
-|  |--create_matrix.R               ## Script for 
-|  |--get_taxons.sh                 ## Script for 
-|--LICENSE                          ## Duh!
-|--main.config                      ## User configuration file! All inputs, outputs and options GO HERE!! ONLY file that SHOULD be modified by user!
-|--main.nf                          ## Main nf-rnaSeqMetagen nextflow scripts.
-|--nextflow.config                  ## Pipeline configuration file! DO NOT EDIT!!!
-|--nf-rnaSeqMetagen.png             ## Pipeline flow diagram
-|--README.md                        ## Duh!
-```
+Content of the repository (located in `$HOME/.nextflow/assets/phelelani/nf-rnaSeqCount`):
+<script id="asciicast-308808" src="https://asciinema.org/a/308808.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="12" data-speed="1.5" data-loop="0"></script>
+
 To get the `help menu` for the workflow, execute the following from anywherre on your system aftercloning the repository:
 ```
 nextflow run nf-rnaSeqMetagen --help
 ```
 <script id="asciicast-308804" src="https://asciinema.org/a/308804.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
-
-
-
-The command above will give you the following usage information and options for running the `nf-rnaSeqMetagen` workflow:
-```
-====================================================================================================
-#####################################  nf-rnaSeqMetagen v0.2   #####################################
-====================================================================================================
-
-USAGE:
-nextflow run nf-rnaSeqMetagen -profile "slurm" --data "/path/to/data" --genome "/path/to/genome.fa" --genes "/path/to/genes.gtf"
-
-HELP:
-nextflow run nf-rnaSeqMetagen --help
-
-MANDATORY ARGUEMENTS:
--profile     STRING    Executor to be used. Available options:
-				"standard"          : Local execution (no job scheduler).
-                "slurm"             : SLURM scheduler.
---mode       STRING    To specify which step of the workflow you are running (see https://github.com/phelelani/nf-rnaSeqMetagen).
-                       Available options:
-				"prep.Containers"   : For downloading Singularity containers used in this workflow.
-                "prep.STARIndex"    : For indexing your reference genome using STAR.
-                "prep.BowtieIndex"  : For indexing your reference genome using Bowtie2.
-                "prep.KrakenDB"     : For building the Kraken2 database.
-                "run.FilterClassify": For performing metagenomics analysis, i.e., filtering and classification.
---data       FOLDER    Path to where the input data (FASTQ files) is located. Supported FASTQ files:
-				[ fastq | fastq.gz | fastq.bz2 | fq | fq.gz | fq.bz2 ]
---genome     FILE      The whole genome FASTA sequence. Supported FASTA files:
-    			[ fasta | fa | fna ]
---genes      FILE      The genome annotation GFT file. Supported GTF file:
-				[ gtf ]
---db         FOLDER    Path to where the Kraken2 database will be saved (or where it is located if already created).
-                       Default: $PWD/kraken2db
-
-OPTIONAL ARGUEMENTS:
---help                 To show this menu.
---out        FOLDER    Path to where the output should be directed.
-                       Default: $PWD/results_nf-rnaSeqMetagen
---pairedEnd            If working with paired-end FASTQ files (default).
---singleEnd            If working with single-end FASTQ files.
---max_memory STRING    Maximum memory you have access to.
-                       Default: "200.GB"
---max_cpus   STRING    Maximum CPUs you have access to.
-                       Default: "24"
---max_time   STRING    Maximum time you have access to.
-                       Default: "24.h"
-====================================================================================================
-```
 
 ---
 
