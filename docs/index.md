@@ -48,7 +48,7 @@ To get the `help menu` for the workflow, execute the following from anywherre on
 ```
 nextflow run nf-rnaSeqMetagen --help
 ```
-<script id="asciicast-308804" src="https://asciinema.org/a/308804.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="40" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308804" src="https://asciinema.org/a/308804.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="45" data-speed="1.5" data-loop="0"></script>
 
 
 
