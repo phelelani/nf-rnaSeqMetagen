@@ -24,7 +24,7 @@ First, you need to clone the `nf-rnaSeqMetagen` repository onto you machine. You
 ```bash
 nextflow pull https://github.com/phelelani/nf-rnaSeqMetagen
 ```
-<script id="asciicast-308777" src="https://asciinema.org/a/308777.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="6" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308777" src="https://asciinema.org/a/308777.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="6" data-speed="1.5" data-loop="0"></script>
 
 Content of the repository (located in `$HOME/.nextflow/assets/phelelani/nf-rnaSeqCount`):
 <script id="asciicast-308808" src="https://asciinema.org/a/308808.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="12" data-speed="1.5" data-loop="0"></script>
