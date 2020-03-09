@@ -122,7 +122,7 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 
 ### Workflow Tracing
 #### Report
-<iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/workflow-tracing/nf-rnaSeqMetagen_report.html"></iframe>
+<iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 100%; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/workflow-tracing/nf-rnaSeqMetagen_report.html"></iframe>
 
 #### Timeline
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/workflow-tracing/nf-rnaSeqMetagen_timeline.html"></iframe>
