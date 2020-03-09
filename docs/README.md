@@ -4,7 +4,7 @@
 *nf-rnaSeqMetagen* is a [Nextflow](http://nextflow.io/)
 
 
-<a href="https://asciinema.org/a/14"><img src="https://asciinema.org/a/14.png" width="836"/></a>
+<a href="https://asciinema.org/a/14?autoplay=1"><img src="https://asciinema.org/a/14.png" width="836"/></a>
 
 [![asciicast](images/test.cast)](images/test.cast)
 
