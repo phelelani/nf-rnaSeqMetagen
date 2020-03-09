@@ -20,7 +20,6 @@ To use the `nf-rnaSeqMetagen` pipeline, the following dependencies are required:
 ## 1. Obtaining the `nf-rnaSeqMetagen` pipeline and preparing data
 First, you need to clone the `nf-rnaSeqMetagen` repository onto you machine. You can either use `git` or `nextflow` (see the two methods below). I recommend using `nextflow` and creating you own `config` file (will explain later) for executing the workflow in the directory of your choosing. The rest of this documentation assumes that you have used `nextflow` to clone this workflow - If your're an expert and have used `git` to clone the workflow - you know what to do :)
 ```bash
-## Using nextflow
 nextflow pull https://github.com/phelelani/nf-rnaSeqMetagen
 ```
 
@@ -49,6 +48,10 @@ To get the `help menu` for the workflow, execute the following from anywherre on
 ```
 nextflow run nf-rnaSeqMetagen --help
 ```
+<script id="asciicast-308777" src="https://asciinema.org/a/308777.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="6" data-speed="1.5" data-loop="0"></script>
+
+
+
 The command above will give you the following usage information and options for running the `nf-rnaSeqMetagen` workflow:
 ```
 ====================================================================================================
