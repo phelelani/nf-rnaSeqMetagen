@@ -1,0 +1,5 @@
+Sample	STAR_mqc-generalstats-star-uniquely_mapped_percent	STAR_mqc-generalstats-star-uniquely_mapped
+SRR5074528	68.91	45915228.0
+SRR5074529	68.55	28721347.0
+SRR5074530	58.3	30692129.0
+SRR5074531	70.59	26459619.0
