@@ -9,7 +9,7 @@ To use the `nf-rnaSeqMetagen` pipeline, the following dependencies are required:
       - [`Singularity`](http://singularity.lbl.gov/)
    2. Reference genome, annotation and indexes
       - Reference genome (`.fa`/`.fasta`) and genome annotation (`.gtf`) files.
-      - Reference genome indexes (`bowtie2` & `STAR` - see *1.3.* below on how to generate the indexes).
+      - Reference genome indexes (`STAR` - see *1.3.* below on how to generate the indexes).
  
 ---
 
@@ -33,7 +33,7 @@ To get the `help menu` for the workflow, execute the following command from anyw
 ```
 nextflow run nf-rnaSeqMetagen --help
 ```
-<script id="asciicast-308804" src="https://asciinema.org/a/308804.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308804" src="https://asciinema.org/a/308804.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
 
 ---
 
@@ -61,7 +61,7 @@ for sample in sample{37..42}_R{1,2}.fastq.gz; do wget -c -O data/$sample http://
 ```bash
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.Containers
 ```
-<script id="asciicast-308816" src="https://asciinema.org/a/308816.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308816" src="https://asciinema.org/a/308816.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
 
 ### 1.3. Generating genome indexes.
 To generate the `STAR` genome indexes, run the following commands:
@@ -107,49 +107,12 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 - [3] Upset tool                   =>    `<output_directory>/upset`
 - [4] Workflow tracing             =>    `<output_directory>/workflow-tracing
 ```
-In addition to the directories created in the results directory, a directory `workflow-tracing` is created to monitor the resources used for filtering and classification. This directory will contain 4 files:
-- `nf-rnaSeqMetagen_report.html`
-- `nf-rnaSeqMetagen_timeline.html`
-- `nf-rnaSeqMetagen_trace.txt`
-- `nf-rnaSeqMetagen_flow.dot`
 
-These files contain detailed information on the resources (CPU, MEMORY and TIME) usage of each of the process in the pipeline. The `<output_directory>` directory structure is summarized below:
+### Sample Analysis Directories
 
-```bash
-<output_directory>
-|--<sample_1> 
-|  |--<sample_1>.fasta.html
-|  |--<sample_1>.reads.html
-|  |--<sample_1>_classified.fasta
-|  |--<sample_1>_fasta.krak
-|  |--<sample_1>_fasta.kron
-|  |--<sample_1>_reads.kron
-|  |--taxon_sequences
-|  |  |--taxid<1>.fasta .. taxid<n>.fasta
-|  |--trinity_<sample_1>
-|  |  |--Trinity.fasta
-..
-|--<sample_N> 
-|  |--<sample_N>.fasta.html
-|  |--<sample_N>.reads.html
-|  |--<sample_N>_classified.fasta
-|  |--<sample_N>_fasta.krak
-|  |--<sample_N>_fasta.kron
-|  |--<sample_N>_reads.kron
-|  |--taxon_sequences
-|  |  |--taxid<1>.fasta .. taxid<n>.fasta
-|  |--trinity_<sample_N>
-|  |  |--Trinity.fasta
-|--MultiQC
-|  |--multiqc_data
-|  |--multiqc_report.html
-|--upset
-|  |--data
-|  |  |--nf-rnaSeqMetagen.csv
-|  |  |--nf-rnaSeqMetagen.json
-|--workflow-tracing
-|  |--nf-rnaSeqMetagen_{report.html,timeline.html,trace.txt,flow.dot}
-```
-**NB:** I am working on further improving the pipleine and the associated documentation, feel free to share comments and suggestions!
+### MultiQC
 
+### UpSet Visualisation Tool
+
+### Workflow Tracing
 ---
