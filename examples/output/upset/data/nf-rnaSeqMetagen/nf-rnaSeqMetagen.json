@@ -1,0 +1,14 @@
+{
+    "file": "data/nf-rnaSeqMetagen/nf-rnaSeqMetagen.csv",
+    "name": "nf-rnaSeqMetagen",
+    "header": 0,
+    "separator": ",",
+    "skip": 0,
+    "meta": [
+        { "type": "id", "index": 0, "name": "Name" },
+        { "type": "string", "index": 5 }
+    ],
+    "sets": [
+        { "format": "binary", "start": 1, "end": 4 } 
+    ]
+}
