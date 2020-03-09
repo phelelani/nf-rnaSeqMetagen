@@ -111,7 +111,7 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 ### Sample Analysis Directories
 
 ### MultiQC
-<iframe style="overflow: hidden; margin: 0px; border: 1px; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless frameborder="5px" scrolling="no" src="https://github.com/phelelaninf-rnaSeqMetagen/commits/master/examples/output/SRR5074528/SRR5074528_fasta.html"></iframe>
+<iframe style="overflow: hidden; margin: 0px; border: 1px; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless frameborder="5px" scrolling="no" src="https://github.com/phelelaninf-rnaSeqMetagen/master/examples/output/SRR5074528/SRR5074528_fasta.html"></iframe>
 
 ### UpSet Visualisation Tool
 
