@@ -64,6 +64,7 @@ for sample in sample{37..42}_R{1,2}.fastq.gz; do wget -c -O data/$sample http://
 ```bash
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.Containers
 ```
+<script id="asciicast-308816" src="https://asciinema.org/a/308816.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
 
 ### 1.3. Generating genome indexes.
 To generate the `STAR` and `Bowtie2` genome indexes, run the following commands:
