@@ -40,26 +40,23 @@ nextflow run nf-rnaSeqMetagen --help
 ### 1.1. Download test datasets (optional)
 We will now download the reference genome (along with its annotation file) from Ensembl. We will also download the FASTQ files from the H3ABioNet site, which we will analyse using the `nf-rnaSeqMetagen` workflow. *__NB__: Skip this section if you have your own data to analyse using this workflow! This section is only for getting data to practice using the `nf-rnaSeqMetagen` workflow!* 
 
-- [x] Download and decompress the mouse reference genome along with its annotation:
+Download and decompress the mouse reference genome along with its annotation:
 ```
-## Make a directory for the reference genome:
+mkdir example
+cd example
 mkdir reference
-
-## Download the reference genome (FASTA) and annotation file (GTF) files and put them into the newlly created directory:
 wget -c -O reference/genome.fa.gz ftp://ftp.ensembl.org/pub/release-68/fasta/mus_musculus/dna/Mus_musculus.GRCm38.68.dna.toplevel.fa.gz
 wget -c -O reference/genes.gtf.gz ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz
 gunzip reference/genome.fa.gz
 gunzip reference/genes.gtf.gz
 ```
 
-- [x] Download RNA-seq test dataset from H3ABioNet:
+Download RNA-seq test dataset from H3ABioNet:
 ```
-## Make a directory for the data:
 mkdir data
-
-## Download the data:
 for sample in sample{37..42}_R{1,2}.fastq.gz; do wget -c -O data/$sample http://h3data.cbio.uct.ac.za/assessments/RNASeq/practice/dataset/$sample; done
 ```
+
 ### 1.2. Download the `Singularity` containers (required to execute the pipeline):
 ```bash
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.Containers
@@ -67,19 +64,14 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.Containers
 <script id="asciicast-308816" src="https://asciinema.org/a/308816.js" async data-autoplay="true" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
 
 ### 1.3. Generating genome indexes.
-To generate the `STAR` and `Bowtie2` genome indexes, run the following commands:
+To generate the `STAR` genome indexes, run the following commands:
 ```bash
-## Generate STAR indexes
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.STARIndex --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
-
-## Generate Bowtie2 indexes:
-nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.BowtieIndex --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
 ```
 
 ### 1.4. Creating the Kraken2 database:
 To create the Kraken2 database, run the following command:
 ```bash
-## Create Kraken2 database
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.KrakenDB --db $PWD/K2DB
 ```
 
