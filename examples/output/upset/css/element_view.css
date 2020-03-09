@@ -1,0 +1,9 @@
+.upset-body .subset-state-toggle-button {
+  cursor: default; }
+
+.upset-body .subset-state-toggle-button .fw {
+  color: #636363; }
+
+.upset-body .subset-state-toggle-button:hover .fw {
+  color: #000; }
+
