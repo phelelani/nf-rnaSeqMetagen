@@ -113,6 +113,10 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 ### MultiQC
 <iframe width="1000" height="1000" seamless frameborder="1" scrolling="yes" src="images/SRR5074528_fasta.html"></iframe>
 
+<iframe style="width:100%; height:100%;" seamless frameborder="1" scrolling="no" src="images/SRR5074528_fasta.html"></iframe>
+
+style="width:100%; height:100%;"
+
 [LINK TO MULTIQC](https://phelelani.github.io/nf-rnaSeqMetagen/examples/output/MultiQC/multiqc_report.html)
 
 [TEST1](https://github.com/phelelani/nf-rnaSeqMetagen/blob/master/examples/output/MultiQC/multiqc_report.html)
