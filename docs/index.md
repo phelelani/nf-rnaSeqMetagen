@@ -109,9 +109,14 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 ```
 
 ### Sample Analysis Directories
+#### Krona Report: Raw Reads (SRR5074528)
+<iframe style="overflow: hidden; margin: 0px; border: 1px; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless frameborder="5px" scrolling="no" src="examples/output/SRR5074528/SRR5074528_reads.html"></iframe>
+
+#### Krona Report: Assembled Reads (SRR5074528)
+<iframe style="overflow: hidden; margin: 0px; border: 1px; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless frameborder="5px" scrolling="no" src="examples/output/SRR5074528/SRR5074528_fasta.html"></iframe>
 
 ### MultiQC
-<iframe style="overflow: hidden; margin: 0px; border: 1px; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless frameborder="5px" scrolling="no" src="examples/output/SRR5074528/SRR5074528_fasta.html"></iframe>
+<iframe style="overflow: hidden; margin: 0px; border: 1px; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless frameborder="5px" scrolling="yes" src="examples/output/MultiQC/multiqc_report.html"></iframe>
 
 ### UpSet Visualisation Tool
 
