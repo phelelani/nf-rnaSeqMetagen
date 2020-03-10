@@ -14,7 +14,7 @@ To use the `nf-rnaSeqMetagen` pipeline, the following dependencies are required:
 ---
 
 <p align="center">
-  <img width="600" src="images/nf-rnaSeqMetagen.png">
+  <img width="832px" src="images/nf-rnaSeqMetagen.png">
 </p>
 
 ---
