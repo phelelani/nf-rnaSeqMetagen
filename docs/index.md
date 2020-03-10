@@ -69,7 +69,7 @@ gunzip reference/genes.gtf.gz
 Download RNA-seq test dataset from H3ABioNet: <a href="examples/data/get_data.sh" target="_blank">script</a>.
 ```
 cd data
-wget 
+wget https://phelelani.github.io/nf-rnaSeqMetagen/examples/data/get_data.sh
 sh get_data.sh
 ls -l 
 cd ..
