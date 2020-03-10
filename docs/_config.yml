@@ -5,7 +5,7 @@ show_downloads: false
 baseurl: "/docs"
 url: "https://phelelani.github.io/nf-rnaSeqMetagen/"
 
-theme: #jekyll-theme-cayman
+theme: jekyll-theme-cayman
 
 author: Phelelani Mpangase
 
