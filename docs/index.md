@@ -1,17 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    
-  </head>
+# nf-rnaSeqMetagen
+[![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)](https://singularity-hub.org/collections/728)
 
-  <body>
-    # nf-rnaSeqMetagen
-    [![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)](https://singularity-hub.org/collections/728)
-    
-    *nf-rnaSeqMetagen* is a [Nextflow](http://nextflow.io/)
-    
-    To use the `nf-rnaSeqMetagen` pipeline, the following dependencies are required:
-    1. Installed softwares:
+*nf-rnaSeqMetagen* is a [Nextflow](http://nextflow.io/)
+
+To use the `nf-rnaSeqMetagen` pipeline, the following dependencies are required:
+   1. Installed softwares:
       - [`Nextflow`](https://www.nextflow.io/)
       - [`Singularity`](http://singularity.lbl.gov/)
    2. Reference genome, annotation and indexes
@@ -137,5 +130,3 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/workflow-tracing/nf-rnaSeqMetagen_timeline.html"></iframe>
 
 ---
-  </body>
-</html>
