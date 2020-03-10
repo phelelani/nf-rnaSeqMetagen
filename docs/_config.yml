@@ -1,9 +1,5 @@
 title: nf-rnaSeqMetagen
-description: A Nextflow pipeline for the identification and taxonomic classification of foreign/microbial reads reads from RNA-seq data.
-show_downloads: false
-
-# baseurl: "/docs"
-# url: "https://phelelani.github.io/nf-rnaSeqMetagen/"
+description: A Nextflow pipeline for the identification and taxonomic classification of foreign/microbial reads reads from high throughput RNA-seq sequencing data.
 
 theme: jekyll-theme-cayman
 
