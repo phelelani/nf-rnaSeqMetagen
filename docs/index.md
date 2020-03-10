@@ -82,6 +82,8 @@ To generate the `STAR` genome indexes, run the following commands:
 ```bash
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.GenomeIndexes --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
 ```
+<script id="asciicast-308974" src="https://asciinema.org/a/308974.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
+
 
 ### 1.4. Creating the Kraken2 database:
 To create the Kraken2 database, run the following command:
@@ -121,16 +123,16 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 - [3] Upset tool                   =>    `<output_directory>/upset`
 - [4] Workflow tracing             =>    `<output_directory>/workflow-tracing
 ```
-### MultiQC
+### 3.1. MultiQC
 View the full MultiQC report <a href="examples/output/MultiQC/multiqc_report.html" target="_blank">here</a>.
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/MultiQC/multiqc_report.html"></iframe>
 
-### Sample Analysis Directories
-#### Krona Report: Raw Reads (SRR5074528)
+### 3.2. Sample Analysis Directories
+#### 3.2.1. Krona Report: Raw Reads (SRR5074528)
 View full Krona chart for raw reads <a href="examples/output/SRR5074528/SRR5074528_reads.html" target="_blank">here</a>.
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="no" src="examples/output/SRR5074528/SRR5074528_reads.html"></iframe>
 
-#### Krona Report: Assembled Reads (SRR5074528)
+#### 3.2.2 Krona Report: Assembled Reads (SRR5074528)
 View full Krona chart for assembled reads <a href="examples/output/SRR5074528/SRR5074528_fasta.html" target="_blank">here</a>.
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="no" src="examples/output/SRR5074528/SRR5074528_fasta.html"></iframe>
 
