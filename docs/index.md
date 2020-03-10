@@ -122,29 +122,29 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 - [4] Workflow tracing             =>    `<output_directory>/workflow-tracing
 ```
 ### MultiQC
-View full report [here](examples/output/MultiQC/multiqc_report.html). 
+View the full MultiQC report <a href="examples/output/MultiQC/multiqc_report.html" target="_blank">here</a>.
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/MultiQC/multiqc_report.html"></iframe>
 
 ### Sample Analysis Directories
 #### Krona Report: Raw Reads (SRR5074528)
-View full report [here](examples/output/SRR5074528/SRR5074528_reads.html).
+View full Krona chart for raw reads <a href="examples/output/SRR5074528/SRR5074528_reads.html" target="_blank">here</a>.
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="no" src="examples/output/SRR5074528/SRR5074528_reads.html"></iframe>
 
 #### Krona Report: Assembled Reads (SRR5074528)
-View full report [here](examples/output/SRR5074528/SRR5074528_fasta.html).
+View full Krona chart for assembled reads <a href="examples/output/SRR5074528/SRR5074528_fasta.html" target="_blank">here</a>.
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="no" src="examples/output/SRR5074528/SRR5074528_fasta.html"></iframe>
 
 ### UpSet Visualisation Tool
-View full report [here](examples/output/upset/index.html).
+View full UpSet plot <a href="examples/output/upset/index.html" target="_blank">here</a>.
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/upset/index.html"></iframe>
 
 ### Workflow Tracing
 #### Report
-View full report [here](examples/output/workflow-tracing/nf-rnaSeqMetagen_report.html).
+View full Nextflow report <a href="examples/output/workflow-tracing/nf-rnaSeqMetagen_report.html" target="_blank">here</a>.
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/workflow-tracing/nf-rnaSeqMetagen_report.html"></iframe>
 
 #### Timeline
-View full report [here](examples/output/workflow-tracing/nf-rnaSeqMetagen_timeline.html).
+View full timeline report <a href="examples/output/workflow-tracing/nf-rnaSeqMetagen_timeline.html" target="_blank">here</a>.
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/workflow-tracing/nf-rnaSeqMetagen_timeline.html"></iframe>
 
 ---
