@@ -118,7 +118,7 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 1080px; float: none; visibility: visible; height: 723px;" seamless scrolling="no" src="examples/output/SRR5074528/SRR5074528_fasta.html"></iframe>
 
 ### UpSet Visualisation Tool
-<iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 1080px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/upset/index.html"></iframe>
+<iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 1090px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/upset/index.html"></iframe>
 
 ### Workflow Tracing
 #### Report
