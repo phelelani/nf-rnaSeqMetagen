@@ -82,7 +82,7 @@ To generate the `STAR` genome indexes, run the following commands:
 ```bash
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.GenomeIndexes --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
 ```
-<script id="asciicast-308974" src="https://asciinema.org/a/308974.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308976" src="https://asciinema.org/a/308976.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
 
 
 ### 1.4. Creating the Kraken2 database:
