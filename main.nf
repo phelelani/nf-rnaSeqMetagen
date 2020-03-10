@@ -59,8 +59,7 @@ Oooh no!! Looks like there's an serious issue in your command!
 I do not recognise the \'--mode ${params.mode}\' option you have given me, or you have not given me any \'--mode\' option at all!
 The allowed options for \'--mode\' are:
 \tprep.Containers\t\t: For downloading Singularity containers used in this workflow.
-\tprep.STARIndex\t\t: For indexing your reference genome using STAR.
-\tprep.BowtieIndex\t: For indexing your reference genome using Bowtie2.
+\tprep.GenomeIndexes\t\t: For indexing your reference genome using STAR.
 \tprep.KrakenDB\t\t: For building the Kraken2 database.
 \trun.FilterClassify\t: For performing metagenomics analysis, i.e., filtering and classification.
 \nPlease use one of the above options with \'--mode\' to run the nf-rnaSeqMetagen workflow!
