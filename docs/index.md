@@ -51,7 +51,15 @@ mkdir reference
 Download and decompress the mouse reference genome along with its annotation:
 ```
 wget -c -O reference/genome.fa.gz ftp://ftp.ensembl.org/pub/release-68/fasta/mus_musculus/dna/Mus_musculus.GRCm38.68.dna.toplevel.fa.gz
+```
+<script id="asciicast-308949" src="https://asciinema.org/a/308949.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="18" data-speed="1.5" data-loop="0"></script>
+
+
+```
 wget -c -O reference/genes.gtf.gz ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz
+```
+
+```
 gunzip reference/genome.fa.gz
 gunzip reference/genes.gtf.gz
 ```
