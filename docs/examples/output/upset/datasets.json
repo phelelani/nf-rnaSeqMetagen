@@ -1,4 +1,5 @@
 [
+    "data/nf-rnaSeqMetagen/online-example.json"
     "data/simpsons/simpsons.json",
     "data/fruit/fruit.json",
     "data/movies/movies.json",
