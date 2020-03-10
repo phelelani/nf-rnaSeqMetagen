@@ -39,11 +39,17 @@ nextflow run nf-rnaSeqMetagen --help
 ### 1.1. Download test datasets (optional)
 We will now download the reference genome (along with its annotation file) from Ensembl. We will also download the FASTQ files from the H3ABioNet site, which we will analyse using the `nf-rnaSeqMetagen` workflow. *__NB__: Skip this section if you have your own data to analyse using this workflow! This section is only for getting data to practice using the `nf-rnaSeqMetagen` workflow!* 
 
-Download and decompress the mouse reference genome along with its annotation:
+Make directories:
 ```
 mkdir example
 cd example
 mkdir reference
+```
+<script id="asciicast-308945" src="https://asciinema.org/a/308945.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="12" data-speed="1.5" data-loop="0"></script>
+
+
+Download and decompress the mouse reference genome along with its annotation:
+```
 wget -c -O reference/genome.fa.gz ftp://ftp.ensembl.org/pub/release-68/fasta/mus_musculus/dna/Mus_musculus.GRCm38.68.dna.toplevel.fa.gz
 wget -c -O reference/genes.gtf.gz ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz
 gunzip reference/genome.fa.gz
