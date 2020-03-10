@@ -66,7 +66,7 @@ gunzip reference/genes.gtf.gz
 ```
 <script id="asciicast-308955" src="https://asciinema.org/a/308955.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="8" data-speed="1.5" data-loop="0"></script>
 
-Download RNA-seq test dataset from H3ABioNet: <a href="docs/examples/data/get_data.sh" target="_blank">script</a>.
+Download RNA-seq test dataset from H3ABioNet: <a href="examples/data/get_data.sh" target="_blank">script</a>.
 ```
 cd data
 wget 
