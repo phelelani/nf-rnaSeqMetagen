@@ -1,1 +1,16 @@
-theme: jekyll-theme-cayman
+title: nf-rnaSeqMetagen
+description: Cayman Blog Theme is a clean, responsive blogging theme for Jekyll and Gitlab/GitHub Pages.
+show_downloads: false
+
+baseurl: "/docs"
+url: "https://phelelani.github.io/nf-rnaSeqMetagen/"
+
+theme: #jekyll-theme-cayman
+
+author: Phelelani Mpangase
+
+plugins:
+  - jekyll-target-blank
+
+target-blank:
+    rel: nofollow
