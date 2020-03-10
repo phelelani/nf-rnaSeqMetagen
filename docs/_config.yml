@@ -1,5 +1,5 @@
 title: nf-rnaSeqMetagen
-description: Cayman Blog Theme is a clean, responsive blogging theme for Jekyll and Gitlab/GitHub Pages.
+description: A Nextflow pipeline for the identification and taxonomic classification of foreign/microbial reads reads from RNA-seq data.
 show_downloads: false
 
 # baseurl: "/docs"
