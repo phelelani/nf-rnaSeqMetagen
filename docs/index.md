@@ -3,12 +3,12 @@
 `nf-rnaSeqMetagen` is a [Nextflow](http://nextflow.io/)
         
 To use the `nf-rnaSeqMetagen` pipeline, the following dependencies are required:
-    1. Installed softwares:
-       - [`Nextflow`](https://www.nextflow.io/)
-       - [`Singularity`](http://singularity.lbl.gov/)
-   2. Reference genome, annotation and indexes
-      - Reference genome (`.fa`/`.fasta`) and genome annotation (`.gtf`) files.
-      - Reference genome indexes (`STAR` - see *1.3.* below on how to generate the indexes).
+1. Installed softwares:
+   - [`Nextflow`](https://www.nextflow.io/)
+   - [`Singularity`](http://singularity.lbl.gov/)
+2. Reference genome, annotation and indexes
+   - Reference genome (`.fa`/`.fasta`) and genome annotation (`.gtf`) files.
+- Reference genome indexes (`STAR` - see *1.3.* below on how to generate the indexes).
  
 ---
 
