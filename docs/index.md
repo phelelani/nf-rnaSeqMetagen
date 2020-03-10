@@ -66,10 +66,16 @@ gunzip reference/genes.gtf.gz
 ```
 <script id="asciicast-308955" src="https://asciinema.org/a/308955.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="8" data-speed="1.5" data-loop="0"></script>
 
-Download RNA-seq test dataset from H3ABioNet:
+Download RNA-seq test dataset from H3ABioNet: <a href="docs/examples/data/get_data.sh" target="_blank">script</a>.
 ```
-for sample in sample{37..42}_R{1,2}.fastq.gz; do wget -c -O data/$sample http://h3data.cbio.uct.ac.za/assessments/RNASeq/practice/dataset/$sample; done
+cd data
+wget 
+sh get_data.sh
+ls -l 
+cd ..
 ```
+
+
 
 ### 1.2. Download the `Singularity` containers (required to execute the pipeline):
 ```bash
