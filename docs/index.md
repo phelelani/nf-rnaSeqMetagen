@@ -122,20 +122,20 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 - [4] Workflow tracing             =>    `<output_directory>/workflow-tracing
 ```
 ### MultiQC
-View full report [here](examples/output/MultiQC/multiqc_report.html)
+View full report [here](examples/output/MultiQC/multiqc_report.html). 
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/MultiQC/multiqc_report.html"></iframe>
 
 ### Sample Analysis Directories
 #### Krona Report: Raw Reads (SRR5074528)
-View full report [here](examples/output/SRR5074528/SRR5074528_reads.html)
+View full report [here](examples/output/SRR5074528/SRR5074528_reads.html).
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="no" src="examples/output/SRR5074528/SRR5074528_reads.html"></iframe>
 
 #### Krona Report: Assembled Reads (SRR5074528)
-View full report [here](examples/output/SRR5074528/SRR5074528_fasta.html)
+View full report [here](examples/output/SRR5074528/SRR5074528_fasta.html).
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="no" src="examples/output/SRR5074528/SRR5074528_fasta.html"></iframe>
 
 ### UpSet Visualisation Tool
-View full report [here](examples/output/upset/index.html)
+View full report [here](examples/output/upset/index.html).
 <iframe style="overflow: hidden; margin: 0px; border: 1px solid grey; display: inline-block; width: 832px; float: none; visibility: visible; height: 723px;" seamless scrolling="yes" src="examples/output/upset/index.html"></iframe>
 
 ### Workflow Tracing
