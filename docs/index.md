@@ -58,15 +58,16 @@ wget -c -O reference/genome.fa.gz ftp://ftp.ensembl.org/pub/release-68/fasta/mus
 ```
 wget -c -O reference/genes.gtf.gz ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz
 ```
+<script id="asciicast-308953" src="https://asciinema.org/a/308953.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="18" data-speed="1.5" data-loop="0"></script>
 
 ```
 gunzip reference/genome.fa.gz
 gunzip reference/genes.gtf.gz
 ```
+<script id="asciicast-308955" src="https://asciinema.org/a/308955.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="8" data-speed="1.5" data-loop="0"></script>
 
 Download RNA-seq test dataset from H3ABioNet:
 ```
-mkdir data
 for sample in sample{37..42}_R{1,2}.fastq.gz; do wget -c -O data/$sample http://h3data.cbio.uct.ac.za/assessments/RNASeq/practice/dataset/$sample; done
 ```
 
@@ -79,7 +80,7 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.Containers
 ### 1.3. Generating genome indexes.
 To generate the `STAR` genome indexes, run the following commands:
 ```bash
-nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.STARIndex --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
+nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.GenomeIndexes --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
 ```
 
 ### 1.4. Creating the Kraken2 database:
