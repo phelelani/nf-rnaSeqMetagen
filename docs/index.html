@@ -76,9 +76,9 @@ title: nf-rnaSeqMetagen
 
 <h3>1.3. Generating genome indexes.</h>
 <!-- To generate the `STAR` genome indexes, run the following commands: -->
-<!-- ```bash -->
-<!-- nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.STARIndex --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf" -->
-<!-- ``` -->
+<code>
+  nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.STARIndex --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
+</code>
 
 <h3>1.4. Creating the Kraken2 database:</h>
 <!-- To create the Kraken2 database, run the following command: -->
