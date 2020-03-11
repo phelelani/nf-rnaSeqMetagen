@@ -71,14 +71,14 @@ Download RNA-seq test dataset from H3ABioNet: <a href="examples/data/get_data.sh
 cd data
 wget https://phelelani.github.io/nf-rnaSeqMetagen/examples/data/get_data.sh
 ```
-<script id="asciicast-309126" src="https://asciinema.org/a/309126.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-309153" src="https://asciinema.org/a/309153.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
 
 ```
 sh get_data.sh
 ls -l 
 cd ..
 ```
-<script id="asciicast-309126" src="https://asciinema.org/a/309126.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-309153" src="https://asciinema.org/a/309153.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
 
 
 ### 1.2. Download the `Singularity` containers (required to execute the pipeline):
@@ -92,7 +92,7 @@ To generate the `STAR` genome indexes, run the following commands:
 ```bash
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.GenomeIndexes --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
 ```
-<script id="asciicast-308976" src="https://asciinema.org/a/308976.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-309150" src="https://asciinema.org/a/309150.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
 
 
 ### 1.4. Creating the Kraken2 database:
