@@ -444,7 +444,9 @@ switch (mode) {
         // 3. Assemble the reads into longer contigs/sequences for classification.
         process run_TrinityAssemble {
             label 'maxi'
-//            memory '150 GB'
+            memory '150 GB'
+            cpus 20
+            maxForks 5
             tag { sample }
             publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
 

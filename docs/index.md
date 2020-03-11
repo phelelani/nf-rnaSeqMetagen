@@ -114,7 +114,7 @@ nextflow run nf-rnaSeqMetagen -profile slurm --mode run.FilterClassify -c mypara
 
 ---
 
-## 3. Explorin `nf-rnaSeqMetagen` Results
+## 3. Exploring `nf-rnaSeqMetagen` Results
 
 ```
 - [1] Sample analysis directories  =>    `<output_directory>/<sample_1> .. <sample_N>`
