@@ -45,7 +45,7 @@ mkdir example
 cd example
 mkdir reference
 ```
-<script id="asciicast-308945" src="https://asciinema.org/a/308945.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="12" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308945" src="https://asciinema.org/a/308945.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="8" data-speed="1.5" data-loop="0"></script>
 
 
 Download and decompress the mouse reference genome along with its annotation:
@@ -71,14 +71,14 @@ Download RNA-seq test dataset from H3ABioNet: <a href="examples/data/get_data.sh
 cd data
 wget https://phelelani.github.io/nf-rnaSeqMetagen/examples/data/get_data.sh
 ```
-<script id="asciicast-309153" src="https://asciinema.org/a/309153.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-309156" src="https://asciinema.org/a/309156.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="14" data-speed="1.5" data-loop="0"></script>
 
 ```
 sh get_data.sh
 ls -l 
 cd ..
 ```
-<script id="asciicast-309153" src="https://asciinema.org/a/309153.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-309164" src="https://asciinema.org/a/309164.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="12" data-speed="1.5" data-loop="0"></script>
 
 
 ### 1.2. Download the `Singularity` containers (required to execute the pipeline):
