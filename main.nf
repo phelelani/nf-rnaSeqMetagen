@@ -445,7 +445,6 @@ switch (mode) {
         process run_TrinityAssemble {
             label 'maxi'
             memory '150 GB'
-            cpus 20
             maxForks 5
             tag { sample }
             publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
