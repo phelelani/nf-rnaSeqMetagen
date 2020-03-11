@@ -70,11 +70,15 @@ Download RNA-seq test dataset from H3ABioNet: <a href="examples/data/get_data.sh
 ```
 cd data
 wget https://phelelani.github.io/nf-rnaSeqMetagen/examples/data/get_data.sh
+```
+<script id="asciicast-309126" src="https://asciinema.org/a/309126.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
+
+```
 sh get_data.sh
 ls -l 
 cd ..
 ```
-
+<script id="asciicast-309126" src="https://asciinema.org/a/309126.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
 
 
 ### 1.2. Download the `Singularity` containers (required to execute the pipeline):
@@ -96,6 +100,7 @@ To create the Kraken2 database, run the following command:
 ```bash
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.KrakenDB --db $PWD/K2DB
 ```
+<script id="asciicast-309125" src="https://asciinema.org/a/309125.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="43" data-speed="1.5" data-loop="0"></script>
 
 We are now ready to execute the workflow!
 
