@@ -23,16 +23,16 @@ First, you need to clone the `nf-rnaSeqMetagen` repository onto you machine. You
 ```bash
 nextflow pull https://github.com/phelelani/nf-rnaSeqMetagen
 ```
-<script id="asciicast-308777" src="https://asciinema.org/a/308777.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="6" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308777" src="https://asciinema.org/a/308777.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="6" data-speed="3" data-loop="0"></script>
 
 Content of the repository (located in `$HOME/.nextflow/assets/phelelani/nf-rnaSeqCount`):
-<script id="asciicast-308808" src="https://asciinema.org/a/308808.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="12" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308808" src="https://asciinema.org/a/308808.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="12" data-speed="3" data-loop="0"></script>
 
 To get the `help menu` for the workflow, execute the following command from anywherre on your system:
 ```
 nextflow run nf-rnaSeqMetagen --help
 ```
-<script id="asciicast-308804" src="https://asciinema.org/a/308804.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308804" src="https://asciinema.org/a/308804.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="43" data-speed="3" data-loop="0"></script>
 
 ---
 
@@ -45,32 +45,32 @@ mkdir example
 cd example
 mkdir reference
 ```
-<script id="asciicast-308945" src="https://asciinema.org/a/308945.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="8" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308945" src="https://asciinema.org/a/308945.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="8" data-speed="3" data-loop="0"></script>
 
 Download and decompress the mouse reference genome along with its annotation:
 ```
 wget -c -O reference/genome.fa.gz ftp://ftp.ensembl.org/pub/release-68/fasta/mus_musculus/dna/Mus_musculus.GRCm38.68.dna.toplevel.fa.gz
 ```
-<script id="asciicast-308949" src="https://asciinema.org/a/308949.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="18" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308949" src="https://asciinema.org/a/308949.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="18" data-speed="3" data-loop="0"></script>
 
 
 ```
 wget -c -O reference/genes.gtf.gz ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz
 ```
-<script id="asciicast-308953" src="https://asciinema.org/a/308953.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="18" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308953" src="https://asciinema.org/a/308953.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="18" data-speed="3" data-loop="0"></script>
 
 ```
 gunzip reference/genome.fa.gz
 gunzip reference/genes.gtf.gz
 ```
-<script id="asciicast-308955" src="https://asciinema.org/a/308955.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="8" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308955" src="https://asciinema.org/a/308955.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="8" data-speed="3" data-loop="0"></script>
 
 Download RNA-seq test dataset from H3ABioNet: <a href="examples/data/get_data.sh" target="_blank">script</a>.
 ```
 cd data
 wget https://phelelani.github.io/nf-rnaSeqMetagen/examples/data/get_data.sh
 ```
-<script id="asciicast-309156" src="https://asciinema.org/a/309156.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="14" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-309156" src="https://asciinema.org/a/309156.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="14" data-speed="3" data-loop="0"></script>
 
 ```
 sh get_data.sh
@@ -84,14 +84,14 @@ cd ..
 ```bash
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.Containers
 ```
-<script id="asciicast-308816" src="https://asciinema.org/a/308816.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-308816" src="https://asciinema.org/a/308816.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="43" data-speed="3" data-loop="0"></script>
 
 ### 1.3. Generating genome indexes.
 To generate the `STAR` genome indexes, run the following commands:
 ```bash
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.GenomeIndexes --genome "$PWD/reference/genome.fa" --genes "$PWD/reference/genes.gtf"
 ```
-<script id="asciicast-309150" src="https://asciinema.org/a/309150.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-309150" src="https://asciinema.org/a/309150.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="43" data-speed="3" data-loop="0"></script>
 
 
 ### 1.4. Creating the Kraken2 database:
@@ -99,7 +99,7 @@ To create the Kraken2 database, run the following command:
 ```bash
 nextflow run nf-rnaSeqMetagen -profile slurm --mode prep.KrakenDB --db $PWD/K2DB
 ```
-<script id="asciicast-309125" src="https://asciinema.org/a/309125.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="43" data-speed="1.5" data-loop="0"></script>
+<script id="asciicast-309125" src="https://asciinema.org/a/309125.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="43" data-speed="3" data-loop="0"></script>
 
 We are now ready to execute the workflow!
 
