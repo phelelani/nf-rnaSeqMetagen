@@ -47,7 +47,6 @@ mkdir reference
 ```
 <script id="asciicast-308945" src="https://asciinema.org/a/308945.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="8" data-speed="1.5" data-loop="0"></script>
 
-
 Download and decompress the mouse reference genome along with its annotation:
 ```
 wget -c -O reference/genome.fa.gz ftp://ftp.ensembl.org/pub/release-68/fasta/mus_musculus/dna/Mus_musculus.GRCm38.68.dna.toplevel.fa.gz
@@ -78,7 +77,7 @@ sh get_data.sh
 ls -l 
 cd ..
 ```
-<script id="asciicast-309164" src="https://asciinema.org/a/309164.js" async data-autoplay="false" data-size="small" data-cols="158" data-rows="12" data-speed="7" data-loop="0"></script>
+<script id="asciicast-309177" src="https://asciinema.org/a/309177.js" async data-autoplay="false" data-size="small" data-cols="158" data-rows="12" data-speed="7" data-loop="0"></script>
 
 
 ### 1.2. Download the `Singularity` containers (required to execute the pipeline):
