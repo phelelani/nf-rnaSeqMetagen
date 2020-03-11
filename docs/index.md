@@ -78,7 +78,7 @@ sh get_data.sh
 ls -l 
 cd ..
 ```
-<script id="asciicast-309164" src="https://asciinema.org/a/309164.js" async data-autoplay="false" data-size="small" data-cols="150" data-rows="12" data-speed="7" data-loop="0"></script>
+<script id="asciicast-309164" src="https://asciinema.org/a/309164.js" async data-autoplay="false" data-size="small" data-cols="200" data-rows="12" data-speed="7" data-loop="0"></script>
 
 
 ### 1.2. Download the `Singularity` containers (required to execute the pipeline):
