@@ -12,7 +12,7 @@ To use the `nf-rnaSeqMetagen` pipeline, the following are required:
 ---
 
 <p align="center">
-  <img width="600px" src="assets/images/nf-rnaSeqMetagen.png">
+  <img width="832px" src="assets/images/nf-rnaSeqMetagen.png">
 </p>
 
 ---
