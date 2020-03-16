@@ -1,6 +1,6 @@
 {
     "file": "data/human/human.csv",
-    "name": "Mouse Gut Metagenome",
+    "name": "Human Gut Metagenome",
     "header": 0,
     "separator": ",",
     "skip": 0,
