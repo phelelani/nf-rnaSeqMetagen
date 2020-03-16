@@ -1,6 +1,8 @@
 [
     "data/mouse/mouse.json",
     
-    "data/scleroderma/scleroderma.json"
+    "data/scleroderma/scleroderma.json",
+
+    "data/human/human.json"
 ]
 
