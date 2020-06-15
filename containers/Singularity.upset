@@ -8,14 +8,24 @@ Maintainer Phelelani.Mpangase@wits.ac.za
 ## Updates and essentials
 apt-get update
 apt-get install -y build-essential
-apt-get install -y wget git curl
+apt-get install -y software-properties-common
 apt-get install -y apt-transport-https
+apt-get update
+
+## OTHER ESSENTIALS
+apt-get install -y wget git curl gfortran zlib1g-dev libbz2-dev liblzma-dev libpcre3-dev libcurl4-gnutls-dev
+apt-get install -y libxml2-dev libssl-dev libopenblas-dev libmagick++-dev libudunits2-dev libcairo2-dev libxt-dev
 
 ## Add R source and install R
-echo "deb https://cloud.r-project.org/bin/linux/ubuntu trusty/" >> /etc/apt/sources.list
-apt-get update
-apt-key update
-apt-get install -y --force-yes r-base
+## Install R
+cd /opt \
+    && wget https://cran.r-project.org/src/base/R-4/R-4.0.1.tar.gz \
+    && tar -vxf R-4.0.1.tar.gz \
+    && cd R-4.0.1 \
+    && ./configure --with-x=no --with-readline=no \
+    && make \
+    && make install \
+    && rm /opt/R-4.0.1.tar.gz
 
 ## Install R packages
 R -e 'install.packages("stringr", repos="http://cloud.r-project.org/", dependencies=TRUE)'
