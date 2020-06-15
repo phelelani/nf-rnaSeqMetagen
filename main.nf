@@ -595,12 +595,9 @@ switch (mode) {
             output:
             file("*.{dmp,taxon,json}") into matrix_files
 
-            shell:
-            tax_names = "${taxonomy}"
-            file_list = "${list}"
-            json_file = "nf-rnaSeqMetagen.json"
-            names_file = "names_table.dmp"
-            template 'get_taxons.sh'
+            """
+            get_taxons.sh ${taxonomy} ${list}
+            """
         }
 
         // 7 Create the UpSet matrix
@@ -615,8 +612,9 @@ switch (mode) {
             output:
             set val("upset_files"), file(list), file("*") into the_matrix
 
-            shell:
-            template 'create_matrix.R'
+            """
+            create_matrix.R
+            """
         }
         break
         // ==========
