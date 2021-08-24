@@ -1,4 +1,4 @@
-[![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)](https://singularity-hub.org/collections/728)
+[![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)](https://singularity-hub.org/collections/728) [![fair-software.eu](https://img.shields.io/badge/fair--software.eu-%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8B%20%20%E2%97%8B%20%20%E2%97%8B-orange)](https://fair-software.eu)
     
 `nf-rnaSeqMetagen` is a [Nextflow](http://nextflow.io/)
         
@@ -43,6 +43,7 @@ Make directories:
 mkdir example
 cd example
 mkdir reference
+mkdir data
 ```
 <script id="asciicast-308945" src="https://asciinema.org/a/308945.js" async data-autoplay="false" data-size="small" data-cols="160" data-rows="8" data-speed="3" data-loop="0"></script>
 
@@ -106,6 +107,16 @@ We are now ready to execute the workflow!
 
 ## 2. Executing the Main `nf-rnaSeqMetagen` Pipeline
 As seen on the `help menu` above, there are a couple of options that you can use with this workflow. It can become a bit tedious and confusing having to specify these commands everytime you have to execute the each section for the analysis. To make your life easier, we will create a configuration script that we will use in this tutorial (we will pass this using the `-c` option of `nextflow`). You can name it whatever you want, but for now, lets call it `myparams.config`. We will add the mandatory arguements for now, but as you become more farmiliar with the workflow - you can experiment with other options. You can use your favourite text editor to create the `myparams.config` file. Copy and paste the the parameters below:
+```
+params {
+    data   = $PWD/data
+    out    = $PWD/myresults
+    genome = $PWD/reference/genome.fa
+    genes  = $PWD/reference/gene.gtf
+    db     = $PWD/K2DB
+}
+
+```
 
 To perform filtering of host reads and classification of exogeneous reads, use this command:
 ```bash
