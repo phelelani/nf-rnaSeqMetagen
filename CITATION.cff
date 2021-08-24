@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "nf-rnaSeqMetagen: A nextflow metagenomics pipeline for identifying and characterizing microbial sequences from RNA-seq data"
+authors:
+  - family-names: Mpangase
+    given-names: "Phelelani Thokozani"
+    orcid: "https://orcid.org/0000-0001-8280-8940"
+  - family-names: Frost
+    given-names: Jacqueline
+    orcid: "https://orcid.org/0000-0001-7627-011X"
+  - family-names: Ramsay
+    given-names: "Michèle"
+    orcid: "https://orcid.org/0000-0002-4156-4801"
+  - family-names: Hazelhurst
+    given-names: Scott
+    orcid: "https://orcid.org/0000-0002-0581-149X"
+doi: 10.1016/j.medmic.2020.100011
+repository-code: "https://github.com/phelelani/nf-rnaSeqMetagen"
+license: MIT
+version: "0.2"
