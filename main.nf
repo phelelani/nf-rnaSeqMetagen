@@ -251,22 +251,19 @@ println " "
 switch (mode) {
     // ========== THIS SECTION IS FOR PREPPING DATA (SINGULARITY IMAGES, STAR INDEXES AND BOWTIE INDEXES)
     case ['prep.Containers']: 
-        base = "shub://phelelani/nf-rnaSeqMetagen:"
-        images = Channel.from( ["${base}star", "${base}kraken2", "${base}upset", "${base}multiqc", "${base}trinity"] )
+        base = "docker://phelelani/nf-rnaseqmetagen:"
+        images = ["star", "kraken2", "upset", "multiqc", "trinity"]
         
         process run_DownloadContainers {
             label 'mini'
-            tag { "Downloading: ${link}" }
-            publishDir "$PWD/containers", mode: 'copy', overwrite: true
-            
+            tag { "Downloading: ${base}${image}" }
+            maxForks 1
+
             input:
-            each link from images
-            
-            output:
-            file("*.sif") into containers
+            each image from images
             
             """
-            singularity pull nf-rnaSeqMetagen-${link.substring(34,)}.sif ${link}
+            singularity pull --force --dir \$HOME/.singularity/cache/ ${base}${image}
             """
         }
         break
@@ -354,7 +351,7 @@ switch (mode) {
             file("*") into taxonomy_update
             
             """
-            /opt/KronaTools-2.7/updateTaxonomy.sh --only-build --preserve .
+            /opt/KronaTools-2.8/updateTaxonomy.sh --only-build --preserve .
             """
         }
         break
