@@ -264,7 +264,7 @@ workflow PREP_INDEXES {
 
 workflow PREP_KRAKENDB {
     main:
-    run_GenerateKrakenDB
+    run_GenerateKrakenDB()
     run_UpdateTaxonomy(run_GenerateKrakenDB.out.taxonomy_dump)
 }
 

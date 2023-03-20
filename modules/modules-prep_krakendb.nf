@@ -18,7 +18,7 @@ process run_GenerateKrakenDB {
 process run_UpdateTaxonomy {
     label 'mini'
     tag { "Update NCBI Taxonomy" }
-    publishDir "$taxonomy", mode: 'copy', overwrite: true
+    publishDir "${taxonomy}", mode: 'copy', overwrite: true
     
     input:
     path(dmp)
