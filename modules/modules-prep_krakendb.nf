@@ -8,7 +8,7 @@ process run_GenerateKrakenDB {
     
     output:
     path("*.k2d"), emit:kraken_db
-    path("taxonomy/taxdump.tar.gz"), emit taxonomy_dump
+    path("taxonomy/taxdump.tar.gz"), emit: taxonomy_dump
     
     """
     kraken2-build --standard --threads ${task.cpus} --db .
