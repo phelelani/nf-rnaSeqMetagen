@@ -7,7 +7,7 @@ process run_GenerateSTARIndex {
     publishDir "${index_dir}", mode: 'copy', overwrite: true
     
     output:
-    set val("starIndex"), path"*") into star_index
+    set val("starIndex"), path("*") into star_index
     
     """
     STAR --runThreadN ${task.cpus} \
