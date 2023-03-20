@@ -1,4 +1,6 @@
 #!/usr/bin/env nextflow
+nextflow.enable.dsl=2
+
 println "clear".execute().text
 
 /*  ======================================================================================================
@@ -248,402 +250,49 @@ println " "
  *  ======================================================================================================
  */
 
-switch (mode) {
-    // ========== THIS SECTION IS FOR PREPPING DATA (SINGULARITY IMAGES, STAR INDEXES AND BOWTIE INDEXES)
-    case ['prep.Containers']: 
-        base = "docker://phelelani/nf-rnaseqmetagen:"
-        images = ["star", "kraken2", "upset", "multiqc", "trinity"]
-        
-        process run_DownloadContainers {
-            label 'mini'
-            tag { "Downloading: ${base}${image}" }
-            maxForks 1
+workflow PREP_INDEXES {
 
-            input:
-            each image from images
-            
-            """
-            singularity pull --force --dir \$HOME/.singularity/cache/ ${base}${image}
-            """
-        }
-        break
-        // ==========
-        
-    case ['prep.GenomeIndexes']:
-        process run_GenerateSTARIndex {
-            label 'maxi'
-            tag { "Generate Star Index" }
-            publishDir "$index_dir", mode: 'copy', overwrite: true
-            
-            output:
-            set val("starIndex"), file("*") into star_index
-            
-            """
-            STAR --runThreadN ${task.cpus} \
-                --runMode genomeGenerate \
-                --genomeDir . \
-                --genomeFastaFiles ${genome} \
-                --sjdbGTFfile ${genes} \
-                --sjdbOverhang 99
-            """
-        }
-
-
-    //     star_index.subscribe { 
-    //         println "\nSTAR index files generated:"
-    //         it[1].each { 
-    //             item -> println "\t${item}" 
-    //         }
-    //         println " "
-    //     }
-    //     break
-    //     // ==========
-        
-    // case ['prep.BowtieIndex']:
-        
-        // process run_GenerateBowtieIndex {
-        //     label 'maxi'
-        //     tag { "Generate Bowtie2 Index" }
-        //     publishDir "$index_dir", mode: 'copy', overwrite: true
-        
-        //     output:
-        //     set val("bowtieIndex"), file("*") into bowtie_index
-            
-        //     """
-        //     bowtie2-build --threads ${task.cpus} ${genome} genome
-        //     """
-        // }   
-    
-        // bowtie_index.subscribe { 
-        //     println "\nBowtie2 index files generated:"
-        //     it[1].each { 
-        //         item -> println "\t${item}" 
-        //     }
-        //     println " "
-        // }
-        break
-        // ==========
-        
-    case ['prep.KrakenDB']:
-        process run_GenerateKrakenDB {
-            label 'maxi'
-            tag { "Generate Kraken DB" }
-            publishDir "$db", mode: 'copy', overwrite: false
-           
-            output:
-            file("*.k2d") into kraken_db
-            file("taxonomy/taxdump.tar.gz") into taxonomy_dump
-            
-            """
-            kraken2-build --standard --threads ${task.cpus} --db .
-            """
-        }
-
-        process run_UpdateTaxonomy {
-            label 'mini'
-            tag { "Update NCBI Taxonomy" }
-            publishDir "$taxonomy", mode: 'copy', overwrite: true
-            
-            input:
-            file(dmp) from taxonomy_dump
-            
-            output:
-            file("*") into taxonomy_update
-            
-            """
-            /opt/KronaTools-2.8/updateTaxonomy.sh --only-build --preserve .
-            """
-        }
-        break
-        // ========== PREPPING STEPS/OPTIONS END HERE!
-
-    // ========== THIS SECTION IS FOR THE MAIN WORKFLOW!
-    case ['run.FilterClassify']:
-        // 1.  ALIGN READS TO REFERENCE GENOME
-        process run_STAR {
-            label 'maxi'
-            tag { sample }
-            // publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}*.{out,tab}"
-    
-            input:
-            set sample, file(reads) from read_pairs
-    
-            output:
-            set sample, file("${sample}*.{out,tab}") into star_results
-            set sample, file("${sample}_Unmapped*") into unmapped_reads
-
-            """
-            STAR --runMode alignReads \
-                --genomeDir ${index_dir} \
-                --readFilesCommand gunzip -c \
-                --readFilesIn ${reads.findAll().join(' ')} \
-                --runThreadN ${task.cpus} \
-                --outSAMtype BAM Unsorted \
-                --outReadsUnmapped Fastx \
-                --outFileNamePrefix ${sample}_
-            """
-        }
-
-
-            // name="${reads.get(0)}"
-            // if [[ "\$name" =~ ".fastq.gz" || "\$name" =~ ".fq.gz" ]]
-            // then
-            //     read_file_cmd = '--readFilesCommand gunzip -c'
-            // elif [[ "\$name" =~ ".fastq.bz2" || "\$name" =~ ".fq.bz2" ]]
-            // then 
-            //     read_file_cmd = '--readFilesCommand bunzip2 -c'
-            // else
-            //     read_file_cmd = ""
-            // fi
-
-
-        process run_FixSeqNames {
-            label 'mini'
-            tag { sample }
-            // publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
-
-            input:
-            set sample, file(unmapped) from unmapped_reads
-            
-            output:
-            set sample, file("${sample}_unmapped*") into unmapped_kraken, unmapped_trinity
-
-            """
-            sed 's| \\(.*\\)\$|\\/1|g' ${unmapped.find { it =~ 'mate1' } } > ${sample}_unmapped_R1.fastq
-            sed 's| \\(.*\\)\$|\\/2|g' ${unmapped.find { it =~ 'mate2' } } > ${sample}_unmapped_R2.fastq
-            """
-        }
-        
-        // 2. Run KRAKEN to classify the raw reads that aren't mapped to the reference genome.
-        process run_KrakenClassifyReads {
-            label 'maxi'
-            tag { sample }
-            // publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
-
-            input:
-            set sample, file(reads) from unmapped_kraken
-
-            output:
-            set sample, file("${sample}_reads.krak") into kraken_reads_report
-            set sample, file("${sample}_classified_*.fastq") into kraken_classified_reads
-            set sample, file("${sample}_unclassified_*.fastq") into kraken_unclassified_reads
-
-            """	
-            kraken2 --db ${db} \
-                --paired ${reads.findAll().join(' ')} \
-                --threads ${task.cpus} \
-                --classified-out ${sample}_classified#.fastq \
-                --unclassified-out ${sample}_unclassified#.fastq \
-                --output ${sample}_reads.krak
-            """ 
-        }
-
-        // 3. Assemble the reads into longer contigs/sequences for classification.
-        process run_TrinityAssemble {
-            label 'maxi'
-            tag { sample }
-            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
-
-            input:
-            set sample, file(reads) from unmapped_trinity
-
-            output:
-            set sample, "trinity_${sample}/Trinity.fasta" into trinity_assembled_reads
-
-            """
-            /bin/hostname
-            Trinity --seqType fq \
-               --max_memory 150G \
-               --left ${reads.find { it =~ 'R1' } } \
-               --right ${reads.find { it =~ 'R2' } } \
-               --SS_lib_type RF \
-               --CPU ${task.cpus} \
-               --output trinity_${sample}
-            """
-         }
-
-        // 4. Run KRAKEN to classify the assembled FASTA sequences.
-        process run_KrakenClassifyFasta {
-            label 'maxi'
-            tag { sample }
-            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true, pattern: "*{_fasta.krak,_classified.fasta}"
-
-            input:
-            set sample, file(fasta) from trinity_assembled_reads
-
-            output:
-            set sample, file("${sample}_fasta.krak") into kraken_fasta_report
-            set sample, file("${sample}_classified.fasta") into kraken_classified_fasta
-            set sample, file("${sample}_unclassified.fasta") into kraken_unclassified_fasta
-
-            """	
-            kraken2 --db ${db} \
-                ${fasta} \
-                --threads ${task.cpus} \
-                --classified-out ${sample}_classified.fasta \
-                --unclassified-out ${sample}_unclassified.fasta \
-                --output ${sample}_fasta.krak
-            """ 
-        }
-
-        // For each sample, create a list with [ SAMPLE_NAME, READ, FASTA ] by merging the classified outputs (reads and fasta) from KRAKEN
-        kraken_reads_report.join(kraken_fasta_report)
-        .map { it -> [ it[0], [ it[1], it[2] ] ] }
-        .set { all_kraken_reports }
-
-        //5. Create that pretty KRONA report for all samples (reads and fasta)
-        process run_KronaReport {
-            label 'mini'
-            tag { sample }
-            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
-
-            input:
-            set sample, file(kraken) from all_kraken_reports
-
-            output:
-            set sample, file("*.html") into html
-            set sample, file("*reads.kron") into reads_krona
-            set sample, file("*fasta.kron") into fasta_krona, fasta_krona_seqs
-
-            """
-            function createChart {
-                awk '\$1=="C" { print \$2"\t"\$3 }' \$1 > \$(sed 's/.krak/.kron/' <<< "\$1")
-                ktImportTaxonomy \$(sed 's/.krak/.kron/' <<< "\$1") \
-                    -tax \$2 \
-                    -o \$(sed 's/.krak/.html/' <<< "\$1")
-                }
-            createChart ${kraken.get(0)} ${taxonomy}
-            createChart ${kraken.get(1)} ${taxonomy}
-            """
-        }
-
-        fasta_krona_seqs.join(kraken_classified_fasta)
-        .map { it -> [ it[0], [ it[1], it[2] ] ] }
-        .set { krona_fasta_pair }
-        
-        process run_CollectTaxSeqs {
-            label 'mini'
-            tag { sample }
-            publishDir "$out_dir/${sample}/taxon_sequences", mode: 'copy', overwrite: true
-
-            input: 
-            set sample, file(test) from krona_fasta_pair
-            
-            output:
-            set sample, file("taxid_*.fasta") into taxon_sequences
-            
-            """
-            for id in \$(awk '{ print \$2 }' ${test.get(0)} | sort -gu)
-            do
-                grep -A1 --no-group-separator "kraken:taxid|\$id\$" ${test.get(1)} | sed 's/path=\\[\\(.*\\)\\] //' > "taxid_"\$id".fasta"
-            done
-            """
-        }
-        
-        // 6a. Collect files for STAR QC
-        star_results.collectFile () { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
-        .set { qc_star }
-
-        // 6. Get QC for STAR, HTSeqCounts and featureCounts
-        process run_MultiQC {
-            label 'mini'
-            tag { "Get QC Information" }
-            publishDir "$out_dir/MultiQC", mode: 'copy', overwrite: true
-
-            input:
-            file(star) from qc_star
-
-            output:
-            file('*') into multiQC
-
-            """
-            multiqc `< ${star}` --force
-            """
-        }
-
-        // 7a. Collect all the krona file locations and put them in a text file
-        fasta_krona.collectFile () { item -> [ 'fasta_krona_files.txt', "${item.get(1)}" + '\n' ] }
-        .set { fasta_krona_list } 
-
-        // fasta_krona_report.collectFile () { item -> [ 'fasta_krona_report.txt', "${item.get(1).find { it =~ 'fasta.kron' } }" + '\n' ] }
-
-        process run_CopyUpsetDir {
-            label 'mini'
-            tag { "Copy UpSet Tool" }
-            publishDir "$out_dir/upset", mode: 'copy', overwrite: true
-            
-            output:
-            file("*") into upset_dir
-
-            """
-            /bin/hostname
-            rsync -avhP /opt/upset/* .
-            """
-        }
-        
-        // 7b. Prepare data for creating the matrix for UpSet: json file, taxonomy file, and sample taxids 
-        process run_PrepareMatrixData {
-            label 'mini'
-            tag { "Prepare Matrix Data" }
-
-            input:
-            file(list) from fasta_krona_list
-
-            output:
-            file("*.{dmp,taxon,json}") into matrix_files
-
-            """
-            get_taxons.sh ${taxonomy} ${list}
-            """
-        }
-
-        // 7 Create the UpSet matrix
-        process run_CreateMatrix {
-            label 'mini'
-            tag { "Create UpSet Matrix" }
-            publishDir "$out_dir/upset/data/nf-rnaSeqMetagen", mode: 'copy', overwrite: true
-
-            input:
-            file(list) from matrix_files
-
-            output:
-            set val("upset_files"), file(list), file("*") into the_matrix
-
-            """
-            create_matrix.R
-            """
-        }
-        break
-        // ==========
 }
 
-/*  ======================================================================================================
- *  WORKFLOW SUMMARY 
- *  ======================================================================================================
- */
-summary="nf-rnaSeqMetagen v0.2 - Execution Summary:"
-workflow.onComplete {
-    println "\n${line}"
-    println "#".multiply(48 - ("${summary}".size() / 2 )) + "  ${summary}  " + "#".multiply(48 - ("${summary}".size() / 2 ))    
-    println "${line}\n"
-    println "Execution command   : ${workflow.commandLine}"
-    println "Execution name      : ${workflow.runName}"
-    println "Workflow start      : ${workflow.start}"
-    println "Workflow end        : ${workflow.complete}"
-    println "Workflow duration   : ${workflow.duration}"
-    println "Workflow completed? : ${workflow.success}"
-    println "Work directory      : ${workflow.workDir}"
-    println "Project directory   : ${workflow.projectDir}"
-    println "Execution directory : ${workflow.launchDir}"
-    println "Configuration files : ${workflow.configFiles}"
-    println "Workflow containers : ${workflow.container}"
-    println "exit status         : ${workflow.exitStatus}"
-    println "Error report        : ${workflow.errorReport ?: '-'}"
-    println "${line}\n"
-    println "\n"
+workflow PREP_KRAKENDB {
+
 }
 
-workflow.onError {
-    println "Oohhh DANG IT!!... Pipeline execution stopped with the following message: ${workflow.errorMessage}"
+workflow 
+// ========== THIS SECTION IS FOR PREPPING DATA (SINGULARITY IMAGES, STAR INDEXES AND BOWTIE INDEXES)
+// ========== THIS SECTION IS FOR THE MAIN WORKFLOW!
+workflow {
+    switch (mode) {
+        case ['prep.GenomeIndexes']:
+        case ['prep.KrakenDB']:
+        case ['run.FilterClassify']:
+        default:
+            exit 1, "NO WORKFLOW GIVEN!"
+            break
+            summary="nf-rnaSeqMetagen v0.2 - Execution Summary:"
+            workflow.onComplete {
+                println "\n${line}"
+                println "#".multiply(48 - ("${summary}".size() / 2 )) + "  ${summary}  " + "#".multiply(48 - ("${summary}".size() / 2 ))    
+                println "${line}\n"
+                println "Execution command   : ${workflow.commandLine}"
+                println "Execution name      : ${workflow.runName}"
+                println "Workflow start      : ${workflow.start}"
+                println "Workflow end        : ${workflow.complete}"
+                println "Workflow duration   : ${workflow.duration}"
+                println "Workflow completed? : ${workflow.success}"
+                println "Work directory      : ${workflow.workDir}"
+                println "Project directory   : ${workflow.projectDir}"
+                println "Execution directory : ${workflow.launchDir}"
+                println "Configuration files : ${workflow.configFiles}"
+                println "Workflow containers : ${workflow.container}"
+                println "exit status         : ${workflow.exitStatus}"
+                println "Error report        : ${workflow.errorReport ?: '-'}"
+                println "${line}\n"
+                println "\n"
+            }
+            
+    }
+    workflow.onError {
+        println "Oohhh DANG IT!!... Pipeline execution stopped with the following message: ${workflow.errorMessage}"
+    }
 }
-//======================================================================================================
