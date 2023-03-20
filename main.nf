@@ -251,7 +251,7 @@ println " "
  */
 
 include { run_GenerateSTARIndex; run_GenerateBowtieIndex } from './modules/modules-prep_indexes.nf'
-include { run_GenerateKrakenDB, run_UpdateTaxonomy } from './modules/modules-prep_krakendb.nf'
+include { run_GenerateKrakenDB; run_UpdateTaxonomy } from './modules/modules-prep_krakendb.nf'
 include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
          run_TrinityAssemble; run_KrakenClassifyFasta; run_KronaReport;
          run_CollectTaxSeqs; run_MultiQC; run_CopyUpsetDir;
