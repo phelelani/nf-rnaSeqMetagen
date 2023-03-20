@@ -258,10 +258,6 @@ include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
          run_PrepareMatrixData; run_CreateMatrix } from './modules/modules-filter_classify.nf'
 
 workflow PREP_INDEXES {
-    take:
-    genome
-    genes
-    
     main:
     run_GenerateSTARIndex(genome, genes)
     run_GenerateBowtieIndex(genome)
