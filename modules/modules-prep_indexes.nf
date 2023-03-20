@@ -7,7 +7,7 @@ process run_GenerateSTARIndex {
     publishDir "${index_dir}", mode: 'copy', overwrite: true
 
     output:
-    set val("starIndex"), path("*"), emit: star_index
+    tuple val("starIndex"), path("*"), emit: star_index
     
     """
     STAR --runThreadN ${task.cpus} \
@@ -25,7 +25,7 @@ process run_GenerateBowtieIndex {
     publishDir "${index_dir}", mode: 'copy', overwrite: true
     
     output:
-    set val("bowtieIndex"), path("*"), emit: bowtie_index
+    tuple val("bowtieIndex"), path("*"), emit: bowtie_index
     
     """
     bowtie2-build --threads ${task.cpus} ${genome} genome
