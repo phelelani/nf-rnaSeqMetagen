@@ -252,10 +252,10 @@ println " "
 
 include { run_GenerateSTARIndex; run_GenerateBowtieIndex } from './modules/modules-prep_indexes.nf'
 include { run_GenerateKrakenDB; run_UpdateTaxonomy } from './modules/modules-prep_krakendb.nf'
-// include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
-//          run_TrinityAssemble; run_KrakenClassifyFasta; run_KronaReport;
-//          run_CollectTaxSeqs; run_MultiQC; run_CopyUpsetDir;
-//          run_PrepareMatrixData; run_CreateMatrix } from './modules/modules-filter_classify.nf'
+include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
+         run_TrinityAssemble; run_KrakenClassifyFasta; run_KronaReport;
+         run_CollectTaxSeqs; run_MultiQC; run_CopyUpsetDir;
+         run_PrepareMatrixData; run_CreateMatrix } from './modules/modules-filter_classify.nf'
 
 workflow PREP_INDEXES {
     main:
@@ -269,36 +269,36 @@ workflow PREP_KRAKENDB {
     run_UpdateTaxonomy(run_GenerateKrakenDB.out.taxonomy_dump)
 }
 
-// workflow FILTER_CLASSIFY {
-//     take:
-//     read_pairs        
+workflow FILTER_CLASSIFY {
+    take:
+    read_pairs        
 
-//     main:
-//     run_STAR(read_pairs)
-//     run_FixSeqNames(run_STAR.out.unmapped_reads)
-//     run_KrakenClassifyReads(run_FixSeqNames.out.unmapped_reads)
-//     run_TrinityAssemble(run_FixSeqNames.out.unmapped_reads)
-//     run_KrakenClassifyFasta(run_TrinityAssemble.out.trinity_assembled_reads)
-//     run_KrakenClassifyReads.out.kraken_reads_report
-//         .join(run_KrakenClassifyFasta.out.kraken_fasta_report)
-//         .map { it -> [ it[0], [ it[1], it[2] ] ] }
-//         .set { all_kraken_reports }
-//     run_KronaReport(all_kraken_reports)
-//     run_KronaReport.out.fasta_krona
-//         .map { it -> [ it[0], [ it[1], it[2] ] ] }
-//         .set { krona_fasta_pair }
-//     run_CollectTaxSeqs(krona_fasta_pair)
-//     run_STAR.out.star_results
-//         .collectFile() { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
-//         .set { qc_star }
-//     run_MultiQC(qc_star)
-//     run_KronaReport.out.fasta_krona
-//         .collectFile() { item -> [ 'fasta_krona_files.txt', "${item.get(1)}" + '\n' ] }
-//         .set { fasta_krona_list }
-//     run_CopyUpsetDir()
-//     run_PrepareMatrixData(fasta_krona_list)
-//     run_CreateMatrix(run_PrepareMatrixData.out.matrix_files)
-// }
+    main:
+    run_STAR(read_pairs)
+    run_FixSeqNames(run_STAR.out.unmapped_reads)
+    run_KrakenClassifyReads(run_FixSeqNames.out.unmapped_reads)
+    run_TrinityAssemble(run_FixSeqNames.out.unmapped_reads)
+    run_KrakenClassifyFasta(run_TrinityAssemble.out.trinity_assembled_reads)
+    run_KrakenClassifyReads.out.kraken_reads_report
+        .join(run_KrakenClassifyFasta.out.kraken_fasta_report)
+        .map { it -> [ it[0], [ it[1], it[2] ] ] }
+        .set { all_kraken_reports }
+    run_KronaReport(all_kraken_reports)
+    run_KronaReport.out.fasta_krona
+        .map { it -> [ it[0], [ it[1], it[2] ] ] }
+        .set { krona_fasta_pair }
+    run_CollectTaxSeqs(krona_fasta_pair)
+    run_STAR.out.star_results
+        .collectFile() { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
+        .set { qc_star }
+    run_MultiQC(qc_star)
+    run_KronaReport.out.fasta_krona
+        .collectFile() { item -> [ 'fasta_krona_files.txt', "${item.get(1)}" + '\n' ] }
+        .set { fasta_krona_list }
+    run_CopyUpsetDir()
+    run_PrepareMatrixData(fasta_krona_list)
+    run_CreateMatrix(run_PrepareMatrixData.out.matrix_files)
+}
 
 workflow {
     switch (mode) {
@@ -308,9 +308,9 @@ workflow {
         case ['prep.KrakenDB']:
             PREP_KRAKENDB()
             break
-        // case ['run.FilterClassify']:
-        //     FILTER_CLASSIFY(read_pairs)
-        //     break
+        case ['run.FilterClassify']:
+            FILTER_CLASSIFY(read_pairs)
+            break
         default:
             exit 1, "NO WORKFLOW GIVEN!"
             break

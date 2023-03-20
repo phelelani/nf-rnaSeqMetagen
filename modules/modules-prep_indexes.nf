@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+genome     = file(params.genome, type: 'file', checkIfExists: true)
+genes      = file(params.genes, type: 'file', checkIfExists: true)
+index_dir  = file(params.genome, type: 'file', checkIfExists: true).getParent()
+
 process run_GenerateSTARIndex {
     label 'maxi'
     tag { "Generate Star Index" }
