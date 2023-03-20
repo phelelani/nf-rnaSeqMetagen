@@ -259,8 +259,8 @@ include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
 
 workflow PREP_INDEXES {
     main:
-    run_GenerateSTARIndex(genome, genes)
-    run_GenerateBowtieIndex(genome)
+    run_GenerateSTARIndex()
+    run_GenerateBowtieIndex()
 }
 
 workflow PREP_KRAKENDB {
@@ -303,7 +303,7 @@ workflow FILTER_CLASSIFY {
 workflow {
     switch (mode) {
         case ['prep.GenomeIndexes']:
-            PREP_INDEXES(genome, genes)
+            PREP_INDEXES()
             break
         case ['prep.KrakenDB']:
             PREP_KRAKENDB()
