@@ -267,7 +267,7 @@ workflow PREP_KRAKENDB {
     k2db_libs
 
     main:
-    run_DownloadK2DBLibs()
+    run_DownloadK2DBLibs(k2db_libs)
 //    run_UpdateTaxonomy(run_GenerateKrakenDB.out.taxonomy_dump)
 }
 
