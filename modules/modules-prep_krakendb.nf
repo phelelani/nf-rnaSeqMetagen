@@ -7,12 +7,13 @@ db = file(params.db, type: 'dir')
 process run_DownloadK2DBLibs {
     label 'mini'
     tag { "Download ${k2db_libs}" }
+    errorStrategy 'ignore'
 
     input:
     each k2db_libs
     
     """
-    kraken2-build --download-library ${k2db_libs} --db ${db}
+    kraken2-build --download-library ${k2db_libs} --db ${db} --use-ftp
     """
 }
 
