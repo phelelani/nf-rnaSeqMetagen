@@ -12,7 +12,7 @@ process run_DownloadK2DBLibs {
     each k2db_libs
 
     output:
-    path("${k2db_libs}_download.log"), emmit: download_log
+    path("${k2db_libs}_download.log"), emit: download_log
     
     """
     kraken2-build --download-library ${k2db_libs} --db ${db} --use-ftp
@@ -29,7 +29,7 @@ process run_BuildK2DB {
     path(logs)
 
     output:
-    path("${k2db_libs}_log"), emmit: build_log
+    path("${k2db_libs}_log"), emit: build_log
     
     """
     kraken2-build --build --db ${db}
