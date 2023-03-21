@@ -15,8 +15,7 @@ process run_DownloadK2DBLibs {
     path("${k2db_libs}_download.log"), emit: download_log
     
     """
-    kraken2-build --download-library ${k2db_libs} --db ${db} --use-ftp
-    cp .command.log > ${k2db_libs}_download.log
+    kraken2-build --download-library ${k2db_libs} --db ${db} --use-ftp |& tee ${k2db_libs}_download.log
     """
 }
 
@@ -32,8 +31,7 @@ process run_BuildK2DB {
     path("${k2db_libs}_log"), emit: build_log
     
     """
-    kraken2-build --build --db ${db}
-    cp .command.log > k2db_build.log
+    kraken2-build --build --db ${db} |& tee k2db_build.log
     """
 }
 
