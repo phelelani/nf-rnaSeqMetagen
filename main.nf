@@ -257,7 +257,7 @@ include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
          run_CollectTaxSeqs; run_MultiQC; run_CopyUpsetDir;
          run_PrepareMatrixData; run_CreateMatrix } from './modules/modules-filter_classify.nf'
 
-kdb2_libs = ['archaea', 'bacteria', 'plasmid', 'viral', 'human', 'fungi', 'plant', 'protozoa', 'nr', 'nt', 'UniVec', 'UniVec_Core']
+k2db_libs = ['archaea', 'bacteria', 'plasmid', 'viral', 'human', 'fungi', 'plant', 'protozoa', 'nr', 'nt', 'UniVec', 'UniVec_Core']
 
 workflow PREP_INDEXES {
     main:
@@ -310,7 +310,7 @@ workflow {
             PREP_INDEXES()
             break
         case ['prep.KrakenDB']:
-            PREP_KRAKENDB(kdb2_libs)
+            PREP_KRAKENDB(k2db_libs)
             break
         case ['run.FilterClassify']:
             FILTER_CLASSIFY(read_pairs)
