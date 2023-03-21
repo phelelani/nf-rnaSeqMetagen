@@ -251,7 +251,7 @@ println " "
  */
 
 include { run_GenerateSTARIndex } from './modules/modules-prep_indexes.nf'
-include { run_run_DownloadK2DBLibs } from './modules/modules-prep_krakendb.nf'
+include { run_DownloadK2DBLibs } from './modules/modules-prep_krakendb.nf'
 include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
          run_TrinityAssemble; run_KrakenClassifyFasta; run_KronaReport;
          run_CollectTaxSeqs; run_MultiQC; run_CopyUpsetDir;
@@ -267,7 +267,7 @@ workflow PREP_KRAKENDB {
     k2db_libs
 
     main:
-    run_GenerateKrakenDB()
+    run_DownloadK2DBLibs()
 //    run_UpdateTaxonomy(run_GenerateKrakenDB.out.taxonomy_dump)
 }
 
