@@ -1,6 +1,8 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+kdb2_libs = ['archaea', 'bacteria', 'plasmid', 'viral', 'human', 'fungi', 'plant', 'protozoa', 'nr', 'nt', 'UniVec', 'UniVec_Core']
+
 process run_DownloadK2DBLibs {
     label 'mini'
     tag { "Download ${k2db_libs}" }
