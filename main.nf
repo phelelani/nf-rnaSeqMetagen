@@ -251,7 +251,7 @@ println " "
  */
 
 include { run_GenerateSTARIndex } from './modules/modules-prep_indexes.nf'
-include { run_GenerateKrakenDB; run_UpdateTaxonomy } from './modules/modules-prep_krakendb.nf'
+include { run_run_DownloadK2DBLibs } from './modules/modules-prep_krakendb.nf'
 include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
          run_TrinityAssemble; run_KrakenClassifyFasta; run_KronaReport;
          run_CollectTaxSeqs; run_MultiQC; run_CopyUpsetDir;
@@ -263,9 +263,12 @@ workflow PREP_INDEXES {
 }
 
 workflow PREP_KRAKENDB {
+    take:
+    k2db_libs
+
     main:
     run_GenerateKrakenDB()
-    run_UpdateTaxonomy(run_GenerateKrakenDB.out.taxonomy_dump)
+//    run_UpdateTaxonomy(run_GenerateKrakenDB.out.taxonomy_dump)
 }
 
 workflow FILTER_CLASSIFY {
@@ -305,7 +308,8 @@ workflow {
             PREP_INDEXES()
             break
         case ['prep.KrakenDB']:
-            PREP_KRAKENDB()
+            kdb2_libs = ['archaea', 'bacteria', 'plasmid', 'viral', 'human', 'fungi', 'plant', 'protozoa', 'nr', 'nt', 'UniVec', 'UniVec_Core']
+            PREP_KRAKENDB(kdb2_libs)
             break
         case ['run.FilterClassify']:
             FILTER_CLASSIFY(read_pairs)
