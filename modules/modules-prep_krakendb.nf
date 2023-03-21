@@ -2,6 +2,7 @@
 nextflow.enable.dsl=2
 
 // k2db_libs = ['archaea', 'bacteria', 'plasmid', 'viral', 'human', 'fungi', 'plant', 'protozoa', 'nr', 'nt', 'UniVec', 'UniVec_Core']
+db = file(params.db, type: 'dir')
 
 process run_DownloadK2DBLibs {
     label 'mini'
