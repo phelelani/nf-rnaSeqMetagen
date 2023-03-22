@@ -7,7 +7,9 @@ taxonomy = file("${db}/taxonomy", type: 'dir')
 process run_DownloadK2DBLibs {
     label 'mini'
     tag { "Download ${k2db_libs}" }
-
+    memory '1 GB'
+    publishDir "${db}/logs", mode: 'copy', overwrite: true
+    
     input:
     each k2db_libs
 
@@ -29,6 +31,7 @@ process run_BuildK2DB {
 
     output:
     path("${k2db_libs}_log"), emit: build_log
+    path("taxonomy/taxdump.tar.gz"), emit: taxonomy_dump
     
     """
     kraken2-build --build --db ${db} |& tee k2db_build.log
@@ -50,4 +53,3 @@ process run_UpdateTaxonomy {
     /opt/KronaTools-2.8/updateTaxonomy.sh --only-build --preserve .
     """
 }
-
