@@ -270,7 +270,7 @@ workflow PREP_KRAKENDB {
 
     main:
     run_DownloadK2DBLibs(k2db_libs)
-    run_BuildK2DB(run_DownloadK2DBLibs.out.download_log.collect())
+    run_BuildK2DB(run_DownloadK2DBLibs.out.download_log.collect(),run_DownloadK2DBLibs.out.genomic_libraries)
     run_UpdateTaxonomy(run_BuildK2DB.out.build_log)
 }
 
