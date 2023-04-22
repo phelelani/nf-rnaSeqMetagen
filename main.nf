@@ -259,13 +259,14 @@ include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
 
 k2db_libs = ['UniVec',
              'UniVec_Core',
-             'bacteria',
              'fungi',
              'human',
              'plasmid',
              'protozoa',
              'viral',
              'archaea']
+
+// 'bacteria',
 
 workflow PREP_INDEXES {
     main:
