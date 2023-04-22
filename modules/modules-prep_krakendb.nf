@@ -24,11 +24,10 @@ process run_DownloadTaxonomy {
     label 'mini'
     tag { "Download_Taxonomy" }
     memory '1 GB'
-    publishDir "${db}", mode: 'copy', overwrite: true
+    publishDir "${db}/taxonomy", mode: 'copy', overwrite: true
     
     output:
-    path("taxonomy"), emit: taxonomy
-    path("taxonomy/taxdump.tar.gz"), emit: taxonomy_dump
+    path("taxonomy/*.{accession2taxid,dlflag,untarflag,tar.gz}"), emit: taxonomy_dump
     
     """
     kraken2-build --download-taxonomy --db .
@@ -45,7 +44,7 @@ process run_UpdateTaxonomy {
     path(taxonomy_dump)
     
     output:
-    path("*"), emit: k2db
+    path("*"), emit: 
     
     """
     /opt/KronaTools-2.8/updateTaxonomy.sh --only-build --preserve .
