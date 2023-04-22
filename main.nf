@@ -251,38 +251,25 @@ println " "
  */
 
 include { run_GenerateSTARIndex } from './modules/modules-prep_indexes.nf'
-include { run_DownloadK2DBLibs; run_BuildK2DB; run_UpdateTaxonomy } from './modules/modules-prep_krakendb.nf'
+include { run_DownloadK2DBIndexes } from './modules/modules-prep_krakendb.nf'
 include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
          run_TrinityAssemble; run_KrakenClassifyFasta; run_KronaReport;
          run_CollectTaxSeqs; run_MultiQC; run_CopyUpsetDir;
          run_PrepareMatrixData; run_CreateMatrix } from './modules/modules-filter_classify.nf'
 
-k2db_libs = ['UniVec',
-             'UniVec_Core',
-             'fungi',
-             'human',
-             'plasmid',
-             'protozoa',
-             'viral',
-             'archaea']
-
-// 'bacteria',
-
+// 
 workflow PREP_INDEXES {
     main:
     run_GenerateSTARIndex()
 }
 
+// 
 workflow PREP_KRAKENDB {
-    take:
-    k2db_libs
-
     main:
-    run_DownloadK2DBLibs(k2db_libs)
-    run_BuildK2DB(run_DownloadK2DBLibs.out.download_log.collect(),run_DownloadK2DBLibs.out.genomic_libraries)
-    run_UpdateTaxonomy(run_BuildK2DB.out.build_log)
+    run_DownloadK2DBIndexes()
 }
 
+// 
 workflow FILTER_CLASSIFY {
     take:
     read_pairs        

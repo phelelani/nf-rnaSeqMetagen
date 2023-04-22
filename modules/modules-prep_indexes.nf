@@ -22,16 +22,3 @@ process run_GenerateSTARIndex {
         --sjdbOverhang 99
     """
 }
-
-// process run_GenerateBowtieIndex {
-//     label 'maxi'
-//     tag { "Generate Bowtie2 Index" }
-//     publishDir "${index_dir}", mode: 'copy', overwrite: true
-    
-//     output:
-//     tuple val("bowtieIndex"), path("*"), emit: bowtie_index
-    
-//     """
-//     bowtie2-build --threads ${task.cpus} ${genome} genome
-//     """
-// }        
