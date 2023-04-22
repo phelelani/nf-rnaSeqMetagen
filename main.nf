@@ -307,7 +307,7 @@ workflow {
             PREP_INDEXES()
             break
         case ['prep.KrakenDB']:
-            PREP_KRAKENDB(k2db_libs)
+            PREP_KRAKENDB()
             break
         case ['run.FilterClassify']:
             FILTER_CLASSIFY(read_pairs)
