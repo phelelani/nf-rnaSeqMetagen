@@ -24,7 +24,7 @@ process run_DownloadTaxonomy {
     label 'mini'
     tag { "Download_Taxonomy" }
     memory '1 GB'
-    publishDir "${db}/taxonomy", mode: 'copy', overwrite: true
+    publishDir "${db}", mode: 'copy', overwrite: true
     
     output:
     path("taxonomy/*.{accession2taxid,dlflag,untarflag,tar.gz}"), emit: taxonomy
@@ -44,7 +44,7 @@ process run_UpdateTaxonomy {
     path(taxonomy)
     
     output:
-    path("*"), emit: taxonomy_dump
+    path("*.{dmp,tab,txt,prt}"), emit: taxonomy_dump
     
     """
     /opt/KronaTools-2.8/updateTaxonomy.sh --only-build --preserve .
