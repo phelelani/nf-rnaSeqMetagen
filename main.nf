@@ -266,7 +266,7 @@ workflow PREP_INDEXES {
 // 
 workflow PREP_KRAKENDB {
     main:
-    run_DownloadK2DBIndexes()
+    // run_DownloadK2DBIndexes()
     run_DownloadTaxonomy()
     run_UpdateTaxonomy(run_DownloadTaxonomy.out.taxonomy)
 }
