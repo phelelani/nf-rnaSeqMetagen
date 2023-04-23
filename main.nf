@@ -286,7 +286,7 @@ workflow FILTER_CLASSIFY {
         .join(run_KrakenClassifyFasta.out.kraken_fasta_report)
         .map { it -> [ it[0], [ it[1], it[2] ] ] }
         .set { all_kraken_reports }
-    // run_KronaReport(all_kraken_reports)
+    run_KronaReport(all_kraken_reports)
     // run_KronaReport.out.fasta_krona
     //     .map { it -> [ it[0], [ it[1], it[2] ] ] }
     //     .set { krona_fasta_pair }
