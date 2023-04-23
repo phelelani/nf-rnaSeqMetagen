@@ -282,25 +282,25 @@ workflow FILTER_CLASSIFY {
     run_KrakenClassifyReads(run_FixSeqNames.out.unmapped_reads)
     run_TrinityAssemble(run_FixSeqNames.out.unmapped_reads)
     run_KrakenClassifyFasta(run_TrinityAssemble.out.trinity_assembled_reads)
-    // run_KrakenClassifyReads.out.kraken_reads_report
-    //     .join(run_KrakenClassifyFasta.out.kraken_fasta_report)
-    //     .map { it -> [ it[0], [ it[1], it[2] ] ] }
-    //     .set { all_kraken_reports }
-    // run_KronaReport(all_kraken_reports)
-    // run_KronaReport.out.fasta_krona
-    //     .map { it -> [ it[0], [ it[1], it[2] ] ] }
-    //     .set { krona_fasta_pair }
-    // run_CollectTaxSeqs(krona_fasta_pair)
-    // run_STAR.out.star_results
-    //     .collectFile() { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
-    //     .set { qc_star }
-    // run_MultiQC(qc_star)
-    // run_KronaReport.out.fasta_krona
-    //     .collectFile() { item -> [ 'fasta_krona_files.txt', "${item.get(1)}" + '\n' ] }
-    //     .set { fasta_krona_list }
-    // run_CopyUpsetDir()
-    // run_PrepareMatrixData(fasta_krona_list)
-    // run_CreateMatrix(run_PrepareMatrixData.out.matrix_files)
+    run_KrakenClassifyReads.out.kraken_reads_report
+        .join(run_KrakenClassifyFasta.out.kraken_fasta_report)
+        .map { it -> [ it[0], [ it[1], it[2] ] ] }
+        .set { all_kraken_reports }
+    run_KronaReport(all_kraken_reports)
+    run_KronaReport.out.fasta_krona
+        .map { it -> [ it[0], [ it[1], it[2] ] ] }
+        .set { krona_fasta_pair }
+    run_CollectTaxSeqs(krona_fasta_pair)
+    run_STAR.out.star_results
+        .collectFile() { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
+        .set { qc_star }
+    run_MultiQC(qc_star)
+    run_KronaReport.out.fasta_krona
+        .collectFile() { item -> [ 'fasta_krona_files.txt', "${item.get(1)}" + '\n' ] }
+        .set { fasta_krona_list }
+    run_CopyUpsetDir()
+    run_PrepareMatrixData(fasta_krona_list)
+    run_CreateMatrix(run_PrepareMatrixData.out.matrix_files)
 }
 
 workflow {
