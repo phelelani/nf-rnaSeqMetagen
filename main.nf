@@ -292,10 +292,10 @@ workflow FILTER_CLASSIFY {
         .map { it -> [ it[0], it[1], it[2] ] }
         .set { krona_fasta_pair }
     run_CollectTaxSeqs(krona_fasta_pair)
-    // run_STAR.out.star_results
-    //     .collectFile() { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
-    //     .set { qc_star }
-    // run_MultiQC(qc_star)
+    run_STAR.out.star_results
+        .collectFile() { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
+        .set { qc_star }
+    run_MultiQC(qc_star)
     // run_KronaReport.out.fasta_krona
     //     .collectFile() { item -> [ 'fasta_krona_files.txt', "${item.get(1)}" + '\n' ] }
     //     .set { fasta_krona_list }
