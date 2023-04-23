@@ -1,19 +1,11 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-genome     = file(params.genome, type: 'file', checkIfExists: true)
-genes      = file(params.genes, type: 'file', checkIfExists: true)
-index_dir  = file(params.genome, type: 'file', checkIfExists: true).getParent()
-db         = file(params.db, type: 'dir')
-taxonomy   = file("${db}/taxonomy", type: 'dir')
-out_dir    = file(params.out, type: 'dir')
-out_dir.mkdir()
-
 // 1.  ALIGN READS TO REFERENCE GENOME
 process run_STAR {
     label 'maxi'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false, pattern: "${sample}*.{out,tab}"
+    publishDir "${out_dir/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}*.{out,tab}"
     
     input:
     tuple val(sample), path(reads)
@@ -37,7 +29,7 @@ process run_STAR {
 process run_FixSeqNames {
     label 'mini'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false
+    publishDir "${outdir}/${sample}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(unmapped)
@@ -55,7 +47,7 @@ process run_FixSeqNames {
 process run_KrakenClassifyReads {
     label 'maxi'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false
+    publishDir "${outdir}/${sample}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(reads)
@@ -79,7 +71,7 @@ process run_KrakenClassifyReads {
 process run_TrinityAssemble {
     label 'maxi'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false
+    publishDir "${outdir}/${sample}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(reads)
@@ -102,7 +94,7 @@ process run_TrinityAssemble {
 process run_KrakenClassifyFasta {
     label 'maxi'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false, pattern: "*{_fasta.krak,_classified.fasta}"
+    publishDir "${outdir}/${sample}", mode: 'copy', overwrite: true, pattern: "*{_fasta.krak,_classified.fasta}"
 
     input:
     tuple val(sample), path(fasta)
@@ -122,11 +114,16 @@ process run_KrakenClassifyFasta {
     """ 
 }
 
+// // For each val(sample), create a list with [ SAMPLE_NAME, READ, FASTA ] by merging the classified outputs (reads and fasta) from KRAKEN
+// kraken_reads_report.join(kraken_fasta_report)
+//     .map { it -> [ it[0], [ it[1], it[2] ] ] }
+//     .set { all_kraken_reports }
+
 //5. Create that pretty KRONA report for all samples (reads and fasta)
 process run_KronaReport {
     label 'mini'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false
+    publishDir "${outdir}/${sample}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(kraken)
@@ -148,30 +145,38 @@ process run_KronaReport {
     """
 }
 
+// fasta_krona_seqs.join(kraken_classified_fasta)
+//     .map { it -> [ it[0], [ it[1], it[2] ] ] }
+//     .set { krona_fasta_pair }
+
 process run_CollectTaxSeqs {
     label 'mini'
     tag { sample }
-    publishDir "${out_dir}/${sample}/taxon_sequences", mode: 'copy', overwrite: false
+    publishDir "${outdir}/${sample}/taxon_sequences", mode: 'copy', overwrite: true
     
     input: 
-    tuple val(sample), path(krona), path(fasta)
+    tuple val(sample), path(test)
             
     output:
     tuple val(sample), path("taxid_*.fasta"), emit: taxon_sequences
             
     """
-    for id in \$(awk '{ print \$2 }' ${krona} | sort -gu)
+    for id in \$(awk '{ print \$2 }' ${test.get(0)} | sort -gu)
     do
-        grep -A1 --no-group-separator "kraken:taxid|\$id\$" ${fasta} | sed 's/path=\\[\\(.*\\)\\] //' > "taxid_"\$id".fasta"
+        grep -A1 --no-group-separator "kraken:taxid|\$id\$" ${test.get(1)} | sed 's/path=\\[\\(.*\\)\\] //' > "taxid_"\$id".fasta"
     done
     """
 }
         
+// // 6a. Collect files for STAR QC
+// star_results.collectFile () { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
+//     .set { qc_star }
+
 // 6. Get QC for STAR, HTSeqCounts and featureCounts
 process run_MultiQC {
     label 'mini'
     tag { "Get QC Information" }
-    publishDir "${out_dir}/MultiQC", mode: 'copy', overwrite: false
+    publishDir "${outdir}/MultiQC", mode: 'copy', overwrite: true
     
     input:
     path(star)
@@ -193,7 +198,7 @@ process run_MultiQC {
 process run_CopyUpsetDir {
     label 'mini'
     tag { "Copy UpSet Tool" }
-    publishDir "${out_dir}/upset", mode: 'copy', overwrite: false
+    publishDir "${outdir}/upset", mode: 'copy', overwrite: true
     
     output:
     path("*"), emit: upset_dir
@@ -224,7 +229,7 @@ process run_PrepareMatrixData {
 process run_CreateMatrix {
     label 'mini'
     tag { "Create UpSet Matrix" }
-    publishDir "${out_dir}/upset/data/nf-rnaSeqMetagen", mode: 'copy', overwrite: false
+    publishDir "${outdir}/upset/data/nf-rnaSeqMetagen", mode: 'copy', overwrite: true
     
     input:
     path(list)

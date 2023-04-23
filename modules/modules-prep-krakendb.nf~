@@ -1,0 +1,33 @@
+
+
+
+process run_GenerateKrakenDB {
+    label 'maxi'
+    tag { "Generate Kraken DB" }
+    publishDir "$db", mode: 'copy', overwrite: false
+    
+    output:
+        file("*.k2d") into kraken_db
+        file("taxonomy/taxdump.tar.gz") into taxonomy_dump
+    
+    """
+    kraken2-build --standard --threads ${task.cpus} --db .
+    """
+}
+
+process run_UpdateTaxonomy {
+    label 'mini'
+    tag { "Update NCBI Taxonomy" }
+    publishDir "$taxonomy", mode: 'copy', overwrite: true
+    
+    input:
+    file(dmp) from taxonomy_dump
+    
+    output:
+    file("*") into taxonomy_update
+    
+    """
+    /opt/KronaTools-2.8/updateTaxonomy.sh --only-build --preserve .
+    """
+}
+
