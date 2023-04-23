@@ -180,16 +180,11 @@ process run_MultiQC {
     path('*'), emit: multiQC
     
     """
-    multiqc `< ${star}` --force
+    multiqc `< ${star}` --force -o .
     """
 }
 
-// // 7a. Collect all the krona file locations and put them in a text file
-// fasta_krona.collectFile () { item -> [ 'fasta_krona_files.txt', "${item.get(1)}" + '\n' ] }
-//     .set { fasta_krona_list } 
-
-// fasta_krona_report.collectFile () { item -> [ 'fasta_krona_report.txt', "${item.get(1).find { it =~ 'fasta.kron' } }" + '\n' ] }
-
+// 
 process run_CopyUpsetDir {
     label 'mini'
     tag { "Copy UpSet Tool" }
