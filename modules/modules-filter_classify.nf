@@ -12,7 +12,7 @@ out_dir.mkdir()
 process run_STAR {
     label 'maxi'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: true, pattern: "${sample}*.{out,tab}"
+    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false, pattern: "${sample}*.{out,tab}"
     
     input:
     tuple val(sample), path(reads)
@@ -36,7 +36,7 @@ process run_STAR {
 process run_FixSeqNames {
     label 'mini'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: true
+    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false
 
     input:
     tuple val(sample), path(unmapped)
@@ -54,7 +54,7 @@ process run_FixSeqNames {
 process run_KrakenClassifyReads {
     label 'maxi'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: true
+    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false
 
     input:
     tuple val(sample), path(reads)
@@ -78,7 +78,7 @@ process run_KrakenClassifyReads {
 process run_TrinityAssemble {
     label 'maxi'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: true
+    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false
 
     input:
     tuple val(sample), path(reads)
@@ -101,7 +101,7 @@ process run_TrinityAssemble {
 process run_KrakenClassifyFasta {
     label 'maxi'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: true, pattern: "*{_fasta.krak,_classified.fasta}"
+    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false, pattern: "*{_fasta.krak,_classified.fasta}"
 
     input:
     tuple val(sample), path(fasta)
@@ -130,7 +130,7 @@ process run_KrakenClassifyFasta {
 process run_KronaReport {
     label 'mini'
     tag { sample }
-    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: true
+    publishDir "${out_dir}/${sample}", mode: 'copy', overwrite: false
 
     input:
     tuple val(sample), path(kraken)
@@ -159,7 +159,7 @@ process run_KronaReport {
 process run_CollectTaxSeqs {
     label 'mini'
     tag { sample }
-    publishDir "${out_dir}/${sample}/taxon_sequences", mode: 'copy', overwrite: true
+    publishDir "${out_dir}/${sample}/taxon_sequences", mode: 'copy', overwrite: false
     
     input: 
     tuple val(sample), path(test)
@@ -183,7 +183,7 @@ process run_CollectTaxSeqs {
 process run_MultiQC {
     label 'mini'
     tag { "Get QC Information" }
-    publishDir "${out_dir}/MultiQC", mode: 'copy', overwrite: true
+    publishDir "${out_dir}/MultiQC", mode: 'copy', overwrite: false
     
     input:
     path(star)
@@ -205,7 +205,7 @@ process run_MultiQC {
 process run_CopyUpsetDir {
     label 'mini'
     tag { "Copy UpSet Tool" }
-    publishDir "${out_dir}/upset", mode: 'copy', overwrite: true
+    publishDir "${out_dir}/upset", mode: 'copy', overwrite: false
     
     output:
     path("*"), emit: upset_dir
@@ -236,7 +236,7 @@ process run_PrepareMatrixData {
 process run_CreateMatrix {
     label 'mini'
     tag { "Create UpSet Matrix" }
-    publishDir "${out_dir}/upset/data/nf-rnaSeqMetagen", mode: 'copy', overwrite: true
+    publishDir "${out_dir}/upset/data/nf-rnaSeqMetagen", mode: 'copy', overwrite: false
     
     input:
     path(list)

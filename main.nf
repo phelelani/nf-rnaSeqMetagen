@@ -281,7 +281,7 @@ workflow FILTER_CLASSIFY {
     run_FixSeqNames(run_STAR.out.unmapped_reads)
     run_KrakenClassifyReads(run_FixSeqNames.out.unmapped_reads)
     run_TrinityAssemble(run_FixSeqNames.out.unmapped_reads)
-    // run_KrakenClassifyFasta(run_TrinityAssemble.out.trinity_assembled_reads)
+    run_KrakenClassifyFasta(run_TrinityAssemble.out.trinity_assembled_reads)
     // run_KrakenClassifyReads.out.kraken_reads_report
     //     .join(run_KrakenClassifyFasta.out.kraken_fasta_report)
     //     .map { it -> [ it[0], [ it[1], it[2] ] ] }
