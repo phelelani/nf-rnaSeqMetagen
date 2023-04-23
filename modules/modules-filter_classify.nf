@@ -5,6 +5,7 @@ genome     = file(params.genome, type: 'file', checkIfExists: true)
 genes      = file(params.genes, type: 'file', checkIfExists: true)
 index_dir  = file(params.genome, type: 'file', checkIfExists: true).getParent()
 db         = file(params.db, type: 'dir')
+taxonomy   = file("${db}/taxonomy", type: 'dir')
 out_dir    = file(params.out, type: 'dir')
 out_dir.mkdir()
 
