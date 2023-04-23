@@ -163,15 +163,15 @@ process run_CollectTaxSeqs {
     publishDir "${out_dir}/${sample}/taxon_sequences", mode: 'copy', overwrite: false
     
     input: 
-    tuple val(sample), path(test)
+    tuple val(sample), path(krona), path(fasta)
             
     output:
     tuple val(sample), path("taxid_*.fasta"), emit: taxon_sequences
             
     """
-    for id in \$(awk '{ print \$2 }' ${test.get(0)} | sort -gu)
+    for id in \$(awk '{ print \$2 }' ${krona} | sort -gu)
     do
-        grep -A1 --no-group-separator "kraken:taxid|\$id\$" ${test.get(1)} | sed 's/path=\\[\\(.*\\)\\] //' > "taxid_"\$id".fasta"
+        grep -A1 --no-group-separator "kraken:taxid|\$id\$" ${fasta} | sed 's/path=\\[\\(.*\\)\\] //' > "taxid_"\$id".fasta"
     done
     """
 }
