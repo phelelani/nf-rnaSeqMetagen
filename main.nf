@@ -289,7 +289,8 @@ workflow FILTER_CLASSIFY {
     run_KronaReport(all_kraken_reports)
     run_KronaReport.out.fasta_krona
         .map { it -> [ it[0], [ it[1], it[2] ] ] }
-        .set { krona_fasta_pair }.view()
+        .set { krona_fasta_pair }
+    krona_fasta_pair.view()
     // run_CollectTaxSeqs(krona_fasta_pair)
     // run_STAR.out.star_results
     //     .collectFile() { item -> [ 'qc_star.txt', "${item.get(1).find { it =~ 'Log.final.out' } }" + ' ' ] }
