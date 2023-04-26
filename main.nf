@@ -8,13 +8,13 @@ println "clear".execute().text
  *  ======================================================================================================
  */
 line="=".multiply(100)
-ver="nf-rnaSeqMetagen v0.2"
+ver="nf-rnaSeqMetagen v2"
 if (params.help) {
     println "\n${line}"
     println "#".multiply(48 - ("${ver}".size() / 2 )) + "  ${ver}   " + "#".multiply(48 - ("${ver}".size() / 2 ))
     println "${line}\n"
     println "USAGE:"
-    println "nextflow run nf-rnaSeqMetagen -profile slurm --data /path/to/data --genome path/to/genome.fa --genes /path/to/genes.gtf --db /path/to/db\n" 
+    println "nextflow run nf-rnaSeqMetagen --data /path/to/data --genome path/to/genome.fa --genes /path/to/genes.gtf --db /path/to/db\n" 
     println "HELP:"
     println "nextflow run nf-rnaSeqMetagen --help\n"
     println "MANDATORY ARGUEMENTS:"
@@ -23,7 +23,6 @@ if (params.help) {
     println "\t\t\t\t\"slurm\"             : SLURM scheduler."
     println "--mode       STRING    To specify which step of the workflow you are running (see https://github.com/phelelani/nf-rnaSeqMetagen)."
     println "                       Availeble options:"
-    println "\t\t\t\t\"prep.Containers\"   : For downloading Singularity containers used in this workflow."
     println "\t\t\t\t\"prep.GenomeIndexes\"    : For indexing your reference genome using STAR."
     println "\t\t\t\t\"prep.KrakenDB\"     : For building the Kraken2 database."
     println "\t\t\t\t\"run.FilterClassify\": For performing metagenomics analysis, i.e., filtering and classification.\n"
@@ -60,7 +59,6 @@ ${line}
 Oooh no!! Looks like there's an serious issue in your command! 
 I do not recognise the \'--mode ${params.mode}\' option you have given me, or you have not given me any \'--mode\' option at all!
 The allowed options for \'--mode\' are:
-\tprep.Containers\t\t: For downloading Singularity containers used in this workflow.
 \tprep.GenomeIndexes\t\t: For indexing your reference genome using STAR.
 \tprep.KrakenDB\t\t: For building the Kraken2 database.
 \trun.FilterClassify\t: For performing metagenomics analysis, i.e., filtering and classification.
@@ -172,49 +170,38 @@ ${line}
 """
 
 // USER INPUT MODE: WHICH ANALYSIS TO RUN!
-switch (params.mode) {
+mode = params.mode
+switch (mode) {
     case [null]:
-        exit 1, "$mode_error"
-        
-    // DATA NOT REQUIRED FOR THESE MODES!
-    case [ "prep.Containers", "prep.GenomeIndexes", "prep.KrakenDB" ]:
-        mode = params.mode
-        
-        switch (mode) {
-            case ["prep.Containers"]:
-                break
-                
-            case ["prep.GenomeIndexes"]:
-                breakIfNull(params.genome,"$genome_error")
-                // breakIfNull(params.genes,"$genes_error")
-                break
-                
-            case ["prep.KrakenDB"]:
-                breakIfNull(params.db,"$db_error")
-                break
-        }
+        exit 1, "$mode_error"        
+    case ["prep.GenomeIndexes"]:
+        // BREAK THE WORKFLOW IF THE FOLLOWING PARAMETERS AREN'T SPECIFIED!        
+        breakIfNull(params.genome,"$genome_error")
+        breakIfNull(params.genes,"$genes_error")
+        // LOAD MODULES FOR THIS WORKFLOW
+        include { run_GenerateSTARIndex } from './modules/modules-prep_indexes.nf'
         break
-        
-
-    // MAIN WORKFLOW PARAMETER CHECKS
+    case ["prep.KrakenDB"]:
+        // BREAK THE WORKFLOW IF THE FOLLOWING PARAMETERS AREN'T SPECIFIED!        
+        breakIfNull(params.db,"$db_error")
+        // LOAD MODULES FOR THIS WORKFLOW
+        include { run_DownloadK2DBIndexes; run_DownloadTaxonomy; run_UpdateTaxonomy } from './modules/modules-prep_krakendb.nf'
+        break
     case ["run.FilterClassify"]:
-        mode = params.mode
-        
         // BREAK THE WORKFLOW IF THE FOLLOWING PARAMETERS AREN'T SPECIFIED!
         breakIfNull(params.data,"$data_error")
         breakIfNull(params.genome,"$genome_error")
         breakIfNull(params.genes,"$genes_error")
         breakIfNull(params.db,"$db_error")
-
         // GET THE INPUT DATA!
         ext = "fastq,fastq.gz,fastq.bz2,fq,fq.gz,fq.bz2"
-        
-        // GET DATA
         read_pairs = Channel.fromFilePairs("${data_dir}/*{R,read,_}[1,2]*.{${ext}}", type: 'file')
             .ifEmpty { exit 1, "$main_data_error" }
-        
-        // OUTPUT DIRECTORIES
-        out_dir.mkdir()
+        // LOAD MODULES FOR THIS WORKFLOW
+        include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
+                 run_TrinityAssemble; run_KrakenClassifyFasta; run_KronaReport;
+                 run_CollectTaxSeqs; run_MultiQC; run_CopyUpsetDir;
+                 run_PrepareMatrixData; run_CreateMatrix } from './modules/modules-filter_classify.nf'
         break
     default:
         exit 1, "$mode_error"
@@ -250,20 +237,13 @@ println " "
  *  ======================================================================================================
  */
 
-include { run_GenerateSTARIndex } from './modules/modules-prep_indexes.nf'
-include { run_DownloadK2DBIndexes; run_DownloadTaxonomy; run_UpdateTaxonomy } from './modules/modules-prep_krakendb.nf'
-include { run_STAR; run_FixSeqNames; run_KrakenClassifyReads;
-         run_TrinityAssemble; run_KrakenClassifyFasta; run_KronaReport;
-         run_CollectTaxSeqs; run_MultiQC; run_CopyUpsetDir;
-         run_PrepareMatrixData; run_CreateMatrix } from './modules/modules-filter_classify.nf'
-
-// 
+// PREPARE GENOME INDEXES
 workflow PREP_INDEXES {
     main:
     run_GenerateSTARIndex()
 }
 
-// 
+// PREPARE KRAKEN DB
 workflow PREP_KRAKENDB {
     main:
     run_DownloadK2DBIndexes()
@@ -271,7 +251,7 @@ workflow PREP_KRAKENDB {
     run_UpdateTaxonomy(run_DownloadTaxonomy.out.taxonomy)
 }
 
-// 
+// FILTER AND CLASSIFY READS
 workflow FILTER_CLASSIFY {
     take:
     read_pairs        
@@ -320,30 +300,3 @@ workflow {
             break
     }
 }
-
-//         summary="nf-rnaSeqMetagen v0.2 - Execution Summary:"
-//         workflow.onComplete {
-//             println "\n${line}"
-//             println "#".multiply(48 - ("${summary}".size() / 2 )) + "  ${summary}  " + "#".multiply(48 - ("${summary}".size() / 2 ))    
-//             println "${line}\n"
-//             println "Execution command   : ${workflow.commandLine}"
-//             println "Execution name      : ${workflow.runName}"
-//             println "Workflow start      : ${workflow.start}"
-//             println "Workflow end        : ${workflow.complete}"
-//             println "Workflow duration   : ${workflow.duration}"
-//             println "Workflow completed? : ${workflow.success}"
-//             println "Work directory      : ${workflow.workDir}"
-//             println "Project directory   : ${workflow.projectDir}"
-//             println "Execution directory : ${workflow.launchDir}"
-//             println "Configuration files : ${workflow.configFiles}"
-//             println "Workflow containers : ${workflow.container}"
-//             println "exit status         : ${workflow.exitStatus}"
-//             println "Error report        : ${workflow.errorReport ?: '-'}"
-//             println "${line}\n"
-//             println "\n"
-//         }
-
-// }
-// workflow.onError {
-//     println "Oohhh DANG IT!!... Pipeline execution stopped with the following message: ${workflow.errorMessage}"
-// }
