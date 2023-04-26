@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 ## Required libraries
-library('stringr', lib.loc="/usr/local/lib/R/site-library")
+library('stringr')
 
 ## Get the list of taxon files
 taxon_files <- system('find . -iname "*fasta.taxon"', intern = TRUE)
