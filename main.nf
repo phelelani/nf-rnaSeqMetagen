@@ -300,8 +300,8 @@ workflow FILTER_CLASSIFY {
         .collectFile() { item -> [ 'fasta_krona_files.txt', "${item.get(1)}" + '\n' ] }
         .set { fasta_krona_list }
     run_CopyUpsetDir()
-    // run_PrepareMatrixData(fasta_krona_list)
-    // run_CreateMatrix(run_PrepareMatrixData.out.matrix_files)
+    run_PrepareMatrixData(fasta_krona_list)
+    run_CreateMatrix(run_PrepareMatrixData.out.matrix_files)
 }
 
 workflow {
